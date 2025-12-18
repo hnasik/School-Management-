@@ -1,4 +1,4 @@
-// settle-due.js — Settle with entered amount (validated) + settlement history
+// settle-due.js â€” Settle with entered amount (validated) + settlement history
 // Updated to be academic-year based (smsAcademicYear) + user-specific.
 // Tracks "Total Paid Admission Amount" per academic year.
 // Now also supports student-specific payment history.
@@ -83,7 +83,7 @@ async function showStudentSettlementHistory(studentId, studentName) {
     return;
   }
 
-  classModalTitle.textContent = `Settlement History — ${studentName}`;
+  classModalTitle.textContent = `Settlement History â€” ${studentName}`;
   classModalSub.textContent = "Loading student settlement history...";
   dueListContainer.innerHTML = "";
   if (modalNoResults) modalNoResults.style.display = "none";
@@ -123,7 +123,7 @@ async function showStudentSettlementHistory(studentId, studentName) {
         .addEventListener("click", () => {
           // go back to class list from cache
           if (currentClass) {
-            classModalTitle.textContent = `Class ${currentClass} — Due Admission Fee`;
+            classModalTitle.textContent = `Class ${currentClass} â€” Due Admission Fee`;
           }
           renderStudentListFromCache();
         });
@@ -136,7 +136,7 @@ async function showStudentSettlementHistory(studentId, studentName) {
     docs.forEach((doc, idx) => {
       const d = doc.data();
       const settledAt = d.settledAt ? d.settledAt.toDate() : null;
-      const timeStr = settledAt ? settledAt.toLocaleString() : "—";
+      const timeStr = settledAt ? settledAt.toLocaleString() : "â€”";
 
       const div = document.createElement("div");
       div.className = "student-card";
@@ -153,7 +153,7 @@ async function showStudentSettlementHistory(studentId, studentName) {
           </div>
           <div class="txt-muted" style="font-size:.85rem">
             By: ${escapeHtml(d.settledByEmail || d.settledBy || "")}
-            · ${escapeHtml(timeStr)}
+            Â· ${escapeHtml(timeStr)}
           </div>
         </div>
       `;
@@ -170,7 +170,7 @@ async function showStudentSettlementHistory(studentId, studentName) {
       .getElementById("student-history-back")
       .addEventListener("click", () => {
         if (currentClass) {
-          classModalTitle.textContent = `Class ${currentClass} — Due Admission Fee`;
+          classModalTitle.textContent = `Class ${currentClass} â€” Due Admission Fee`;
         }
         renderStudentListFromCache();
       });
@@ -234,7 +234,7 @@ async function showSettlementHistory() {
         const td = totalSnap.data();
         const totalAmount = Number(td.totalPaidAdmissionAmount || 0);
         const updatedAt = td.updatedAt ? td.updatedAt.toDate() : null;
-        const updatedStr = updatedAt ? updatedAt.toLocaleString() : "—";
+        const updatedStr = updatedAt ? updatedAt.toLocaleString() : "â€”";
 
         const totalDiv = document.createElement("div");
         totalDiv.className = "notification notification-success";
@@ -246,7 +246,7 @@ async function showSettlementHistory() {
               Total Paid Admission Amount (${escapeHtml(academicYear)})
             </div>
             <div style="font-size:.9rem">
-              ?${escapeHtml(totalAmount.toFixed(2))} · Last updated: ${escapeHtml(
+              ?${escapeHtml(totalAmount.toFixed(2))} Â· Last updated: ${escapeHtml(
           updatedStr
         )}
             </div>
@@ -263,7 +263,7 @@ async function showSettlementHistory() {
     ownerDocs.forEach((doc, idx) => {
       const d = doc.data();
       const settledAt = d.settledAt ? d.settledAt.toDate() : null;
-      const timeStr = settledAt ? settledAt.toLocaleString() : "—";
+      const timeStr = settledAt ? settledAt.toLocaleString() : "â€”";
 
       const div = document.createElement("div");
       div.className = "student-card";
@@ -274,7 +274,7 @@ async function showSettlementHistory() {
             ${escapeHtml(d.studentName || "Unnamed")}
           </div>
           <div class="txt-muted" style="font-size:.9rem">
-            Class: ${escapeHtml(String(d.studentClass || "—"))}
+            Class: ${escapeHtml(String(d.studentClass || "â€”"))}
             &nbsp; | &nbsp;
             Settled: ?${escapeHtml(String(d.amountSettled || "0"))}
             (Prev: ?${escapeHtml(String(d.previousDue || "0"))}
@@ -282,7 +282,7 @@ async function showSettlementHistory() {
           </div>
           <div class="txt-muted" style="font-size:.85rem">
             By: ${escapeHtml(d.settledByEmail || d.settledBy || "")}
-            · ${escapeHtml(timeStr)}
+            Â· ${escapeHtml(timeStr)}
           </div>
         </div>
         <div style="color:#6b7280">#${idx + 1}</div>
@@ -329,10 +329,10 @@ async function settleStudentAmount(studentDoc, amount) {
 
   const studentId = studentDoc.id;
   const data = studentDoc.data();
-  const previousDue = Number(data.dueAdmissionFee || 0);
+  const previousDue = Number(data.dueFee || 0);
   const studentName = data.name || data.studentName || "Unnamed";
   const studentClass =
-    data.studentClass || data.class || data.student_class || currentClass || "—";
+    data.studentClass || data.class || data.student_class || currentClass || "â€”";
   const academicYearFromStudent = data.academicYear || getSelectedAcademicYear();
 
   // validation
@@ -384,7 +384,7 @@ async function settleStudentAmount(studentDoc, amount) {
     });
 
     // 2) Update student's due
-    batch.update(studentRef, { dueAdmissionFee: newDue });
+    batch.update(studentRef, { dueFee: newDue });
 
     // 3) Update "Total Paid Admission Amount" doc for this academic year
     batch.set(
@@ -404,7 +404,7 @@ async function settleStudentAmount(studentDoc, amount) {
     lastLoadedStudents = lastLoadedStudents.map((s) => {
       if (s.id === studentId) {
         const oldData = typeof s.data === "function" ? s.data() : s._rawData || {};
-        const newData = Object.assign({}, oldData, { dueAdmissionFee: newDue });
+        const newData = Object.assign({}, oldData, { dueFee: newDue });
         return { id: s.id, data: () => newData, _rawData: newData };
       }
       return s;
@@ -444,7 +444,7 @@ function renderStudentListFromCache() {
     const studentName = data.name || data.studentName || "Unnamed";
     const studentClass =
       data.studentClass || data.class || data.student_class || currentClass;
-    const due = Number(data.dueAdmissionFee || 0);
+    const due = Number(data.dueFee || 0);
 
     const div = document.createElement("div");
     div.className = "student-card";
@@ -507,7 +507,7 @@ function renderStudentListFromCache() {
 
       const sdata =
         typeof sdoc.data === "function" ? sdoc.data() : sdoc._rawData || {};
-      const due = Number(sdata.dueAdmissionFee || 0);
+      const due = Number(sdata.dueFee || 0);
       if (amt > due) {
         alert(
           `Entered amount (?${amt}) is greater than due amount (?${due}). Please enter = ?${due}.`
@@ -547,10 +547,10 @@ function renderStudentListFromCache() {
     .addEventListener("click", showSettlementHistory);
 }
 
-// --- Load students for selected class with dueAdmissionFee > 0 (academic-year based) ---
+// --- Load students for selected class with dueFee > 0 (academic-year based) ---
 async function openClassModal(cls) {
   currentClass = cls;
-  classModalTitle.textContent = `Class ${cls} — Due Admission Fee`;
+  classModalTitle.textContent = `Class ${cls} â€” dueFee`;
   classModalSub.textContent = "Loading...";
   dueListContainer.innerHTML = "";
   if (modalNoResults) modalNoResults.style.display = "none";
@@ -593,7 +593,7 @@ async function openClassModal(cls) {
     const withDue = [];
     snap.docs.forEach((doc) => {
       const d = doc.data();
-      const due = Number(d.dueAdmissionFee || 0);
+      const due = Number(d.dueFee || 0);
       if (due && due > 0) withDue.push(doc);
     });
 
