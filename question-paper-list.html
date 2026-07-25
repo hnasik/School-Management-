@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script src="app.js"></script>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Question Paper List</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+
+body{
+font-family:Arial,sans-serif;
+background:#f5f5f5;
+margin:0;
+padding:15px;
+}
+
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+width:220px;
+height:100%;
+background:#1976d2;
+padding-top:20px;
+}
+
+.sidebar h3{
+color:white;
+text-align:center;
+}
+
+.sidebar a{
+display:block;
+padding:12px 20px;
+color:white;
+text-decoration:none;
+font-weight:bold;
+}
+
+.sidebar a:hover{
+background:rgba(255,255,255,.2);
+}
+
+.main-content{
+margin-left:235px;
+padding:15px;
+}
+
+.card{
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+.btn{
+padding:8px 12px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+margin:3px;
+color:white;
+}
+
+.view-btn{
+background:#1976d2;
+}
+
+.pdf-btn{
+background:#28a745;
+}
+
+.delete-btn{
+background:red;
+}
+
+#previewArea{
+display:none;
+background:white;
+padding:20px;
+}
+
+.arabic{
+direction:rtl;
+text-align:right;
+font-family:'Amiri',serif;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+table-layout:fixed;
+}
+
+table td,
+table th{
+border:1px solid #000;
+padding:8px;
+word-break:break-word;
+}
+
+@media(max-width:768px){
+
+.sidebar{
+position:relative;
+width:100%;
+height:auto;
+}
+
+.main-content{
+margin-left:0;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<h3>Question Menu</h3>
+
+<a href="question-paper.html">
+Question Paper
+</a>
+
+<a href="question-paper-list.html">
+Question Paper List
+</a>
+
+<a href="student-list.html">
+Student List
+</a>
+
+</div>
+
+<div class="main-content">
+
+<div class="card">
+
+<h2>Saved Question Papers</h2>
+
+<div id="paperContainer"></div>
+
+</div>
+
+<div id="previewArea"></div>
+
+</div>
+
+<script>
+    const questionPaperRef = db.collection("question_papers");
+
+let currentUser = null;
+
+auth.onAuthStateChanged(async(user)=>{
+
+if(!user){
+
+window.location.href="login.html";
+
+return;
+
+}
+
+currentUser=user;
+
+await loadPapers();
+
+});
+
+async function loadPapers(){
+
+const container =
+document.getElementById("paperContainer");
+
+container.innerHTML="Loading...";
+
+try{
+
+const snapshot =
+await questionPaperRef
+.where("ownerId","==",currentUser.uid)
+.orderBy("createdAt","desc")
+.get();
+
+container.innerHTML="";
+
+if(snapshot.empty){
+
+container.innerHTML="No Question Paper Found";
+
+return;
+
+}
+
+snapshot.forEach(doc=>{
+
+const paper=doc.data();
+
+container.innerHTML+=`
+
+<div class="card">
+
+<b>Class:</b> ${paper.className}<br>
+
+<b>Subject:</b> ${paper.subject}<br>
+
+<b>Exam:</b> ${paper.exam}<br>
+
+<b>Full Marks:</b> ${paper.fullMarks}<br>
+
+<br>
+
+<button
+class="btn view-btn"
+onclick="viewPaper('${doc.id}')">
+
+View
+
+</button>
+
+<button
+class="btn pdf-btn"
+onclick="downloadPaperPDF('${doc.id}')">
+
+Download PDF
+
+</button>
+
+<button
+class="btn"
+style="background:#ff9800;"
+onclick="editPaper('${doc.id}')">
+
+Edit
+
+</button>
+
+<button
+class="btn delete-btn"
+onclick="deletePaper('${doc.id}')">
+
+Delete
+
+</button>
+
+</div>
+
+`;
+
+});
+
+}catch(error){
+
+console.error(error);
+
+container.innerHTML="Error Loading Question Papers";
+
+}
+
+}
+
+
+
+
+async function deletePaper(id){
+
+const confirmDelete = confirm(
+"Are you sure you want to delete this Question Paper?"
+);
+
+if(!confirmDelete){
+
+return;
+
+}
+
+try{
+
+await questionPaperRef
+.doc(id)
+.delete();
+
+alert("Question Paper Deleted Successfully");
+
+loadPapers();
+
+}catch(error){
+
+console.error(error);
+
+alert("Failed to Delete Question Paper");
+
+}
+
+}
+async function editPaper(id){
+
+try{
+
+const doc = await questionPaperRef.doc(id).get();
+
+if(!doc.exists){
+
+alert("Question Paper Not Found");
+
+return;
+
+}
+
+window.location.href =
+"question-paper.html?id=" + id;
+
+}catch(error){
+
+console.error(error);
+
+alert("Failed to Open Question Paper");
+
+}
+
+}
+
+function buildPaperHTML(paper){
+
+let html = `
+
+<div
+id="paperContent"
+style="
+width:190mm;
+margin:0 auto;
+padding:5mm 8mm;
+background:white;
+box-sizing:border-box;
+">
+
+<h1 style="
+text-align:center;
+margin:0;
+font-size:30px;
+font-weight:bold;
+">
+
+${paper.schoolName || "SCHOOL NAME"}
+
+</h1>
+
+<div style="
+text-align:center;
+font-size:18px;
+font-weight:bold;
+margin-top:5px;
+margin-bottom:8px;
+">
+
+QUESTION PAPER
+
+</div>
+${paper.heading ? `
+
+<div
+style="
+text-align:center;
+font-size:${paper.headingSize || 24}px;
+font-weight:bold;
+margin-top:10px;
+margin-bottom:15px;
+">
+
+${paper.heading}
+
+</div>
+
+` : ""}
+
+<hr style="
+border:none;
+border-top:2px solid #000;
+margin:15px 0;
+">
+
+<table style="
+width:100%;
+border:none;
+margin-bottom:15px;
+">
+<tr>
+
+<td>
+
+<b>Student Name:</b>
+
+<span
+contenteditable="true"
+style="
+display:inline-block;
+min-width:220px;
+border-bottom:1px solid #000;
+padding:2px 5px;
+">
+
+
+
+</span>
+
+</td>
+
+<td style="text-align:right">
+
+<b>Roll No:</b>
+
+<span
+contenteditable="true"
+style="
+display:inline-block;
+min-width:120px;
+border-bottom:1px solid #000;
+padding:2px 5px;
+">
+
+
+
+</span>
+
+</td>
+
+</tr>
+<tr>
+<td><b>Class:</b> ${paper.className}</td>
+<td style="text-align:right">
+<b>Exam:</b> ${paper.exam}
+</td>
+</tr>
+
+<tr>
+<td><b>Subject:</b> ${paper.subject}</td>
+<td style="text-align:right">
+<b>Full Marks:</b> ${paper.fullMarks}
+</td>
+</tr>
+<tr>
+<td>
+<b>Time:</b> ${paper.time || ""}
+</td>
+
+<td>
+
+</td>
+</tr>
+
+</table>
+
+<hr style="
+border:none;
+border-top:1px solid #000;
+margin:15px 0 20px;
+">
+
+`;
+
+paper.questions.forEach((q,index)=>{
+    if(q.type==="heading"){
+
+html += `
+
+<div
+style="
+font-size:${q.fontSize || 24}px;
+font-weight:bold;
+text-align:center;
+margin:20px 0 15px 0;
+">
+
+${q.text}
+
+</div>
+
+`;
+
+}
+
+if(q.type==="question"){
+
+const isArabic =
+/[\u0600-\u06FF]/.test(q.question);
+
+html += `
+
+<div
+class="${isArabic ? 'arabic' : ''}"
+style="
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+margin:6px 0;
+font-size:${q.fontSize || 18}px;
+line-height:1.4;
+">
+
+<div style="
+width:92%;
+word-break:break-word;
+">
+
+
+${q.question}
+
+</div>
+
+<div style="
+width:8%;
+text-align:right;
+font-weight:bold;
+white-space:nowrap;
+">
+
+(${q.marks})
+
+</div>
+
+</div>
+
+`;
+
+}
+if(q.type==="table"){
+
+html += `
+
+<div style="
+margin:20px 0;
+">
+
+${q.html}
+
+</div>
+
+`;
+
+}
+if(q.type==="images"){
+
+    html += `
+
+    <div style="
+        margin:20px 0;
+    ">
+
+        <div style="
+            display:grid;
+            grid-template-columns:repeat(${q.perRow},1fr);
+            gap:10px;
+            justify-items:${q.align};
+        ">
+
+            ${q.images.map(src=>`
+
+                <img
+                    src="${src}"
+                    style="
+                        width:${q.width}px;
+                        height:${q.height}px;
+                        object-fit:contain;
+                        border:1px solid #ccc;
+                    ">
+
+            `).join("")}
+
+        </div>
+
+        ${
+            q.caption
+            ? `
+                <div style="
+                    text-align:center;
+                    margin-top:10px;
+                    font-weight:bold;
+                ">
+                    ${q.caption}
+                </div>
+            `
+            : ""
+        }
+
+    </div>
+
+    `;
+
+}
+
+
+});
+
+
+html += `
+
+</div>
+
+`;
+
+return html;
+
+}
+
+async function viewPaper(id){
+
+try{
+
+const doc = await questionPaperRef.doc(id).get();
+
+if(!doc.exists){
+
+alert("Question Paper Not Found");
+
+return;
+
+}
+
+const paper = doc.data();
+
+const area =
+document.getElementById("previewArea");
+
+area.style.display = "block";
+
+area.innerHTML =
+buildPaperHTML(paper);
+
+window.scrollTo({
+
+top: document.body.scrollHeight,
+
+behavior: "smooth"
+
+});
+
+}catch(error){
+
+console.error(error);
+
+alert("Failed to Load Question Paper");
+
+}
+
+}
+
+async function downloadPaperPDF(id){
+
+try{
+
+const doc = await questionPaperRef.doc(id).get();
+
+if(!doc.exists){
+
+alert("Question Paper Not Found");
+
+return;
+
+}
+
+const paper = doc.data();
+
+const temp =
+document.createElement("div");
+
+temp.innerHTML =
+buildPaperHTML(paper);
+
+document.body.appendChild(temp);
+
+html2pdf()
+.set({
+
+margin:[3,3,3,3],
+
+filename:
+paper.subject + "-Question-Paper.pdf",
+
+image:{
+type:'jpeg',
+quality:1
+},
+
+html2canvas:{
+scale:2,
+useCORS:true,
+scrollY:0
+},
+
+jsPDF:{
+unit:'mm',
+format:'a4',
+orientation:'portrait'
+},
+
+pagebreak:{
+mode:['avoid-all','css','legacy']
+}
+
+})
+.from(temp)
+.save()
+.then(()=>{
+
+document.body.removeChild(temp);
+
+});
+
+}catch(error){
+
+console.error(error);
+
+alert("Failed to Download PDF");
+
+}
+
+}
+
+
+</script>
+
+</body>
+</html>

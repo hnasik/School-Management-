@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Question Paper</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+#imagePreview{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+    margin:15px 0;
+
+}
+
+#imagePreview img{
+
+    width:80px;
+
+    height:80px;
+
+    object-fit:cover;
+
+    border-radius:8px;
+
+    border:2px solid #ddd;
+
+}
+
+*{
+box-sizing:border-box;
+}
+
+body{
+font-family:'Noto Sans Bengali',sans-serif;
+background:#f5f5f5;
+margin:0;
+padding:15px;
+}
+
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+width:220px;
+height:100%;
+background:#1976d2;
+padding-top:20px;
+overflow:auto;
+}
+
+.sidebar h3{
+color:#fff;
+text-align:center;
+margin-bottom:20px;
+}
+
+.sidebar a{
+display:block;
+padding:12px 20px;
+color:white;
+text-decoration:none;
+font-weight:bold;
+}
+
+.sidebar a:hover{
+background:rgba(255,255,255,.2);
+}
+
+.main-content{
+margin-left:235px;
+padding:15px;
+}
+
+.card{
+background:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+input,
+select,
+textarea{
+width:100%;
+padding:10px;
+margin-top:5px;
+margin-bottom:10px;
+border:1px solid #ccc;
+border-radius:6px;
+font-size:15px;
+}
+
+textarea{
+min-height:120px;
+resize:vertical;
+}
+
+button{
+padding:12px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-weight:bold;
+}
+
+.add-btn{
+background:#1976d2;
+color:white;
+width:100%;
+margin-bottom:10px;
+}
+
+.table-btn{
+background:#ff9800;
+color:white;
+width:100%;
+margin-bottom:10px;
+}
+
+.save-btn{
+background:#28a745;
+color:white;
+width:100%;
+}
+
+.question-item{
+background:#f8f9fa;
+padding:12px;
+margin-bottom:10px;
+border-radius:8px;
+border-left:5px solid #1976d2;
+}
+
+.question-meta{
+font-size:13px;
+color:#666;
+margin-top:5px;
+}
+
+.arabic-input{
+direction:rtl;
+text-align:right;
+font-family:'Amiri',serif;
+font-size:18px;
+}
+
+.popup{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.5);
+
+    
+    justify-content:center;
+    align-items:center;
+
+    z-index:9999;
+}
+.popup-content{
+    background:#fff;
+    width:450px;
+    max-width:95%;
+    max-height:90vh;
+
+    overflow-y:auto;
+
+    padding:20px;
+
+    border-radius:10px;
+}
+.popup h3{
+margin-top:0;
+}
+
+@media(max-width:768px){
+
+.sidebar{
+position:relative;
+width:100%;
+height:auto;
+}
+
+.main-content{
+margin-left:0;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<h3>Question Menu</h3>
+
+<a href="student-list.html">Student List</a>
+
+<a href="question-paper.html">Question Paper</a>
+<a href="question-paper-list.html">Question Paper List</a>
+
+</div>
+
+<div class="main-content">
+
+<div class="card">
+
+<h2>Create Question Paper</h2>
+<label>School Name</label>
+
+<input
+type="text"
+id="schoolNameInput"
+placeholder="Enter School Name">
+
+<label>Class</label>
+
+<select id="classInput">
+    <option>UKG</option>
+    <option>LKG</option>
+    <option>NURSERY</option>
+<option>1</option>
+<option>2</option>
+<option>3</option>
+<option>4</option>
+<option>5</option>
+<option>6</option>
+<option>7</option>
+<option>8</option>
+<option>9</option>
+<option>10</option>
+<option>11</option>
+<option>12</option>
+</select>
+
+
+<label>Subject</label>
+
+<input
+type="text"
+id="subjectInput"
+placeholder="Subject Name">
+
+<label>Exam</label>
+
+<select id="examInput">
+<option>1st Semester</option>
+<option>2nd Semester</option>
+<option>3rd Semester</option>
+<option>Final Semester</option>
+</select>
+
+<label>Language</label>
+
+<select id="languageInput">
+<option>Bengali</option>
+<option>English</option>
+<option>Arabic</option>
+</select>
+<label>Heading Text</label>
+
+<input
+type="text"
+id="headingInput"
+placeholder="Example: Answer Any Five Questions">
+
+<label>Heading Font Size (px)</label>
+
+<input
+type="number"
+id="headingSizeInput"
+value="24"
+min="12"
+max="60">
+
+<label>Question</label>
+
+<textarea
+id="questionInput"
+placeholder="Type Question Here">
+</textarea>
+<label>Question Font Size (px)</label>
+
+<input
+type="number"
+id="questionFontSizeInput"
+value="18"
+min="10"
+max="50">
+
+<label>Marks</label>
+
+<input
+type="number"
+id="marksInput"
+placeholder="Question Marks">
+
+<label>Full Marks</label>
+
+<input
+type="number"
+id="fullMarksInput"
+placeholder="Paper Full Marks">
+<label>Time</label>
+
+<input
+type="text"
+id="timeInput"
+placeholder="Example: 2 Hours">
+<button
+class="table-btn"
+style="background:#009688;"
+onclick="openImagePopup()">
+
+Add Images
+
+</button>
+
+<button
+class="table-btn"
+onclick="openTablePopup()">
+    
+
+Create Table
+
+</button>
+<button
+class="table-btn"
+style="background:#9c27b0;"
+onclick="openHeadingPopup()">
+
+Add Heading
+
+</button>
+
+<button
+class="add-btn"
+onclick="addQuestion()">
+
+Add Question
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Questions Preview</h3>
+
+<div id="questionList"></div>
+
+<button
+class="save-btn"
+onclick="saveQuestionPaper()">
+
+Save Question Paper
+
+</button>
+
+</div>
+
+</div>
+<!-- HEADING POPUP -->
+
+<div
+id="headingPopup"
+class="popup">
+
+<div class="popup-content">
+
+<h3>Add Heading</h3>
+
+<label>Heading Text</label>
+
+<input
+type="text"
+id="headingTextInput"
+placeholder="Example: SECTION - A">
+
+<label>Font Size (px)</label>
+
+<input
+type="number"
+id="headingFontSizeInput"
+value="24"
+min="12"
+max="60">
+
+<button
+class="add-btn"
+onclick="saveHeading()">
+
+Save Heading
+
+</button>
+
+<button
+class="save-btn"
+onclick="closeHeadingPopup()">
+
+Close
+
+</button>
+
+</div>
+
+</div>
+<!-- IMAGE POPUP -->
+
+<div
+id="imagePopup"
+class="popup">
+
+<div class="popup-content">
+
+<h3>Add Images</h3>
+
+<label>Select Images</label>
+
+<input
+type="file"
+id="imageInput"
+accept="image/*"
+multiple>
+<div id="imagePreview"></div>
+
+<label>Images Per Row</label>
+
+<select id="imagesPerRow">
+
+<option value="1">1</option>
+
+<option value="2">2</option>
+
+<option value="3">3</option>
+
+<option value="4">4</option>
+
+<option value="5">5</option>
+
+<option value="6">6</option>
+
+</select>
+
+<label>Image Width (px)</label>
+
+<input
+type="number"
+id="imageWidthInput"
+value="120"
+min="40"
+max="500">
+
+<label>Image Height (px)</label>
+
+<input
+type="number"
+id="imageHeightInput"
+value="120"
+min="40"
+max="500">
+
+<label>Alignment</label>
+
+<select id="imageAlignInput">
+
+<option value="left">Left</option>
+
+<option value="center" selected>Center</option>
+
+<option value="right">Right</option>
+
+</select>
+
+<label>Layout</label>
+
+<select id="imageLayoutInput">
+
+<option value="vertical">
+Vertical
+</option>
+
+<option value="horizontal">
+Horizontal
+</option>
+
+</select>
+
+<label>Caption (Optional)</label>
+
+<input
+type="text"
+id="imageCaptionInput"
+placeholder="Example: Write the names">
+
+<div class="popup-buttons">
+
+    <button
+        class="add-btn"
+        onclick="saveImages()">
+        Save Images
+    </button>
+
+    <button
+        class="save-btn"
+        onclick="closeImagePopup()">
+        Close
+    </button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- TABLE POPUP -->
+
+<div
+id="tablePopup"
+class="popup">
+
+<div class="popup-content">
+
+<h3>Create Table</h3>
+
+<label>Rows</label>
+
+<input
+type="number"
+id="rowInput"
+min="1">
+
+<label>Columns</label>
+
+<input
+type="number"
+id="columnInput"
+min="1">
+
+<button
+class="add-btn"
+onclick="createTable()">
+
+Create
+
+</button>
+
+<button
+class="save-btn"
+onclick="closeTablePopup()">
+
+Close
+
+</button>
+
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script src="app.js"></script>
+
+<script src="question-paper.js"></script>
+
+</body>
+</html>
