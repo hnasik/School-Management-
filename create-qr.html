@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create School QR</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    padding: 30px;
+  }
+
+  .card {
+    max-width: 420px;
+    margin: auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+
+  h2 {
+    color: #4a148c;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: #555;
+    font-size: 0.9rem;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #4a148c, #7b1fa2);
+    color: white;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  #qr {
+    margin-top: 20px;
+  }
+
+  #msg {
+    margin-top: 12px;
+    font-weight: 600;
+  }
+  @media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #qr, #qr * {
+    visibility: visible;
+  }
+
+  #qr {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>School Attendance QR</h2>
+  <p>One QR for all teachers of this school</p>
+
+  <button id="generateBtn">Generate / Regenerate QR</button>
+
+  <div id="qr"></div>
+
+<button id="printBtn" style="display:none;">Print QR (A4)</button>
+
+<div id="msg"></div>
+
+</div>
+
+<script type="module">
+/* ================= QR LIBRARY ================= */
+import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm";
+
+/* ================= FIREBASE SDKs ================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+/* ================= FIREBASE CONFIG ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCOzfdIXBeh6drFhml4pOFEvPG8xV_Wjzw",
+  authDomain: "school-management-projec-9db7a.firebaseapp.com",
+  projectId: "school-management-projec-9db7a",
+  storageBucket: "school-management-projec-9db7a.firebasestorage.app",
+  messagingSenderId: "975842483778",
+  appId: "1:975842483778:web:d1708792ff56014f3317db",
+  measurementId: "G-1X2Q7LE6G3"
+};
+
+/* ================= INIT ================= */
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let schoolId = null;
+
+const msg = document.getElementById("msg");
+const qrDiv = document.getElementById("qr");
+
+/* ================= AUTO LOGIN + USER LOOKUP ================= */
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    console.warn("Waiting for auth session...");
+    return;
+  }
+
+  // ? CORRECT COLLECTION NAME: "user"
+  const q = query(
+    collection(db, "user"),
+    where("uid", "==", user.uid)
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    msg.textContent = "User profile not found in Firestore";
+    msg.style.color = "red";
+    return;
+  }
+
+  const userData = snap.docs[0].data();
+
+  if (userData.role !== "admins") {
+    document.body.innerHTML =
+      "<h2 style='color:white;text-align:center;margin-top:40px'>Admin access only</h2>";
+    return;
+  }
+
+  // ? ADMIN VERIFIED
+  schoolId = userData.schoolId;
+  loadExistingQR();
+});
+
+/* ================= LOAD EXISTING QR ================= */
+async function loadExistingQR() {
+  const ref = doc(db, "schools", schoolId);
+  const snap = await getDoc(ref);
+
+  if (snap.exists() && snap.data().qrData) {
+    drawQR(snap.data().qrData);
+    msg.textContent = "Existing school QR loaded";
+    msg.style.color = "green";
+  }
+}
+
+/* ================= DRAW QR ================= */
+async function drawQR(data) {
+  qrDiv.innerHTML = "";
+  const canvas = document.createElement("canvas");
+  await QRCode.toCanvas(canvas, JSON.stringify(data), { width: 260 });
+  qrDiv.appendChild(canvas);
+
+  // show print button
+  document.getElementById("printBtn").style.display = "block";
+}
+
+/* ================= GENERATE / REGENERATE ================= */
+document.getElementById("generateBtn").addEventListener("click", async () => {
+  if (!schoolId) return;
+
+  const qrData = {
+    schoolId: schoolId,
+    purpose: "teacher-attendance"
+  };
+
+  try {
+    await setDoc(
+      doc(db, "schools", schoolId),
+      {
+        qrData,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+
+    await drawQR(qrData);
+    msg.textContent = "? School QR generated successfully";
+    msg.style.color = "green";
+
+  } catch (e) {
+    msg.textContent = "? Failed to generate QR";
+    msg.style.color = "red";
+    console.error(e);
+  }
+});
+document.getElementById("printBtn").addEventListener("click", () => {
+  window.print();
+});
+
+</script>
+
+</body>
+</html>

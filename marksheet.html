@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marksheet Setup</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f5f5f5;
+padding:15px;
+margin:0;
+}
+.card{
+background:#fff;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+h2{margin-top:0;}
+label{
+display:block;
+margin-top:10px;
+font-weight:bold;
+}
+input,select{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:1px solid #ccc;
+border-radius:6px;
+box-sizing:border-box;
+}
+button{
+padding:10px 15px;
+border:none;
+border-radius:6px;
+background:#1976d2;
+color:white;
+cursor:pointer;
+font-weight:bold;
+}
+.subject-row{
+display:grid;
+grid-template-columns:2fr 1fr 1fr auto;
+gap:5px;
+margin-bottom:8px;
+}
+#logoPreview,#principalPreview{
+width:120px;
+height:120px;
+object-fit:contain;
+border:1px solid #ddd;
+margin-top:10px;
+border-radius:8px;
+background:#fff;
+}
+.remove-btn{background:red;}
+.save-btn{
+width:100%;
+background:#28a745;
+padding:14px;
+font-size:16px;
+}
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+width:220px;
+height:100%;
+background:#1976d2;
+padding-top:20px;
+box-sizing:border-box;
+}
+
+.sidebar h3{
+color:white;
+text-align:center;
+margin-bottom:20px;
+}
+
+.sidebar a{
+display:block;
+color:white;
+text-decoration:none;
+padding:12px 20px;
+font-weight:bold;
+}
+
+.sidebar a:hover{
+background:rgba(255,255,255,.2);
+}
+
+.main-content{
+margin-left:235px;
+padding:15px;
+}
+</style>
+</head>
+
+<body>
+    <div class="sidebar">
+
+<h3>Marksheet Menu</h3>
+
+<a href="student-list.html">
+Student List
+</a>
+<a href="index.html" class="nav-link">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+
+
+<a href="marksheet-preview.html">
+Marksheet Preview
+</a>
+
+<a href="add-marksheet.html">
+Add Marksheet
+</a>
+
+</div>
+
+<div class="main-content">
+
+<div class="card">
+<h2>School Information</h2>
+
+<label>School Name</label>
+<input type="text" id="schoolName">
+
+<label>School Address</label>
+<input type="text" id="schoolAddress">
+
+<label>School Logo</label>
+<input type="file" id="logoInput">
+<img id="logoPreview">
+
+<label>Principal Signature</label>
+<input type="file" id="principalInput">
+<img id="principalPreview">
+</div>
+
+<div class="card">
+<h2>Semester Setup</h2>
+
+<label>Semester Name</label>
+<input
+type="text"
+id="semester"
+placeholder="Example: First Terminal Examination 2026">
+
+<label>Assign Result To Class</label>
+
+<select id="resultClass">
+<option value="Nursery">Nursery</option>
+<option value="KG 1">KG 1 (LKG)</option>
+<option value="KG 2">KG 2 (UKG)</option>
+<option value="1">Class 1</option>
+<option value="2">Class 2</option>
+<option value="3">Class 3</option>
+<option value="4">Class 4</option>
+<option value="5">Class 5</option>
+<option value="6">Class 6</option>
+<option value="7">Class 7</option>
+<option value="8">Class 8</option>
+<option value="9">Class 9</option>
+<option value="10">Class 10</option>
+<option value="11">Class 11</option>
+<option value="12">Class 12</option>
+</select>
+</div>
+
+<div class="card">
+<h2>Subjects Setup</h2>
+
+<div id="subjectsContainer"></div>
+
+<button onclick="addSubject()">
++ Add Subject
+</button>
+</div>
+
+<div class="card">
+<button
+class="save-btn"
+onclick="saveSettings()">
+Save Settings
+</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<script src="marksheet.js"></script>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Teacher Attendance Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f4f6fb;
+  padding:20px;
+}
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+  max-width:1200px;
+  margin:auto;
+}
+h2{margin-bottom:10px;}
+.controls{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:15px;
+}
+select,input{
+  padding:8px;
+}
+button{
+  padding:8px 14px;
+  border:none;
+  border-radius:5px;
+  background:#4a148c;
+  color:#fff;
+  cursor:pointer;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
+}
+th,td{
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:center;
+}
+th{background:#f0f0f0;}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Teacher Attendance Dashboard</h2>
+
+  <div class="controls">
+    <input type="date" id="dateInput" />
+    <input type="month" id="monthInput" />
+    <button id="dailyBtn">Load Daily</button>
+    <button id="monthlyBtn">Load Monthly</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Teacher Name</th>
+        <th>Date</th>
+        <th>Entry Time</th>
+        <th>Exit Time</th>
+        <th>Hours</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCOzfdIXBeh6drFhml4pOFEvPG8xV_Wjzw",
+  authDomain: "school-management-projec-9db7a.firebaseapp.com",
+  projectId: "school-management-projec-9db7a",
+  storageBucket: "school-management-projec-9db7a.firebasestorage.app",
+  messagingSenderId: "975842483778",
+  appId: "1:975842483778:web:d1708792ff56014f3317db"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let schoolId = null;
+const tbody = document.getElementById("tbody");
+
+/* Admin check */
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    alert("Please login as admin");
+    return;
+  }
+
+  const snap = await db.collection("user").where("uid", "==", user.uid).get();
+  if (snap.empty) {
+    alert("Admin profile not found");
+    return;
+  }
+
+  const data = snap.docs[0].data();
+  if (data.role !== "admins") {
+    alert("Admins only");
+    return;
+  }
+
+  schoolId = data.schoolId;
+});
+
+/* Helpers */
+function clearTable() {
+  tbody.innerHTML = "";
+}
+
+function calcHours(entry, exit) {
+  if (!entry || !exit) return "-";
+  const e1 = new Date("1970-01-01T" + entry);
+  const e2 = new Date("1970-01-01T" + exit);
+  return ((e2 - e1) / 3600000).toFixed(2);
+}
+
+function addRow(d) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${d.teacherName || "-"}</td>
+    <td>${d.date || "-"}</td>
+    <td>${d.entryTime || "-"}</td>
+    <td>${d.exitTime || "-"}</td>
+    <td>${calcHours(d.entryTime, d.exitTime)}</td>
+  `;
+  tbody.appendChild(tr);
+}
+
+/* ? Load Daily (FIXED) */
+async function loadDaily() {
+  const date = document.getElementById("dateInput").value;
+  if (!date) return alert("Select date");
+
+  clearTable();
+
+  const snap = await db
+    .collection("attendance")
+    .doc(schoolId)
+    .collection(date)
+    .get();
+
+  if (snap.empty) {
+    alert("No attendance found");
+    return;
+  }
+
+  snap.forEach(doc => addRow(doc.data()));
+}
+
+/* ? Load Monthly (FIXED) */
+async function loadMonthly() {
+  const month = document.getElementById("monthInput").value;
+  if (!month) return alert("Select month");
+
+  clearTable();
+
+  const schoolRef = db.collection("attendance").doc(schoolId);
+  const dateCollections = await schoolRef.listCollections();
+
+  for (const col of dateCollections) {
+    if (col.id.startsWith(month)) {
+      const snap = await col.get();
+      snap.forEach(doc => addRow(doc.data()));
+    }
+  }
+}
+
+document.getElementById("dailyBtn").onclick = loadDaily;
+document.getElementById("monthlyBtn").onclick = loadMonthly;
+</script>
+
+</body>
+</html>
