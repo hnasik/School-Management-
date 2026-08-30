@@ -6,6 +6,34 @@
 <title>Student List</title>
 
 <style>
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+width:220px;
+height:100%;
+background:#1976d2;
+padding-top:20px;
+overflow:auto;
+}
+
+.sidebar h3{
+color:#fff;
+text-align:center;
+margin-bottom:20px;
+}
+
+.sidebar a{
+display:block;
+padding:12px 20px;
+color:white;
+text-decoration:none;
+font-weight:bold;
+}
+
+.sidebar a:hover{
+background:rgba(255,255,255,.2);
+}
 
 *{
 box-sizing:border-box;
@@ -16,6 +44,7 @@ body{
 background:#f5f5f5;
 padding:15px;
 margin:0;
+padding-left:250px;
 }
 
 .header{
@@ -81,69 +110,21 @@ border-radius:8px;
 text-align:center;
 padding:20px;
 }
-.sidebar{
-position:fixed;
-left:0;
-top:0;
-width:220px;
-height:100%;
-background:#1976d2;
-padding-top:20px;
-box-sizing:border-box;
-}
-
-.sidebar h3{
-color:white;
-text-align:center;
-margin-bottom:20px;
-}
-
-.sidebar a{
-display:block;
-color:white;
-text-decoration:none;
-padding:12px 20px;
-font-weight:bold;
-}
-
-.sidebar a:hover{
-background:rgba(255,255,255,.2);
-}
-
-.main-content{
-margin-left:235px;
-padding:15px;
-}
 
 </style>
 </head>
 <body>
-    <div class="sidebar">
+<div class="sidebar">
 
-<h3>Marksheet Menu</h3>
+<h3>Question Menu</h3>
 
-<a href="student-list.html">
-Student List
-</a>
-        <a href="index.html" class="nav-link">
-        <i class="fas fa-tachometer-alt"></i> Dashboard
-      </a>
-       
-
-<a href="marksheet-preview.html">
-Marksheet Preview
-</a>
-<a href="marksheet.html">
-Marksheet
-</a>
-
-<a href="add-marksheet.html">
-Add Marksheet
-</a>
+<a href="student-list.html">Student List</a>
+ <a href="student.html">Students</a>
+  <a href="marksheet.html">Marksheet</a>
+<a href="question-paper.html">Question Paper</a>
+<a href="question-paper-list.html">Question Paper List</a>
 
 </div>
-
-<div class="main-content">
 
 <div class="header">Student List</div>
 
@@ -158,6 +139,7 @@ class="search"
 placeholder="Search Student">
 
 <div class="class-grid">
+    <button class="class-btn" onclick="filterClass('Pre Primary')">Pre Primary</button>
 
 <button class="class-btn" onclick="filterClass('Nursery')">Nursery</button>
 <button class="class-btn" onclick="filterClass('KG 1')">LKG</button>
@@ -189,6 +171,6 @@ placeholder="Search Student">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="app.js"></script>
-</div>
+
 </body>
 </html>
