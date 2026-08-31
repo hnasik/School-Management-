@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Student List</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f5f5;
+padding:15px;
+margin:0;
+}
+
+.header{
+font-size:22px;
+font-weight:bold;
+text-align:center;
+margin-bottom:15px;
+}
+
+.logout-btn{
+width:100%;
+padding:10px;
+background:red;
+border:none;
+color:white;
+border-radius:8px;
+margin-bottom:10px;
+}
+
+.search{
+width:100%;
+padding:12px;
+border:1px solid #ccc;
+border-radius:8px;
+margin-bottom:15px;
+}
+
+.class-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:8px;
+margin-bottom:15px;
+}
+
+.class-btn{
+padding:10px;
+background:#1976d2;
+color:white;
+border:none;
+border-radius:8px;
+}
+
+.student-row{
+background:white;
+padding:12px;
+margin-bottom:10px;
+border-radius:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+.add-btn{
+background:#28a745;
+color:white;
+border:none;
+padding:10px;
+border-radius:8px;
+}
+
+.loading{
+text-align:center;
+padding:20px;
+}
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+width:220px;
+height:100%;
+background:#1976d2;
+padding-top:20px;
+box-sizing:border-box;
+}
+
+.sidebar h3{
+color:white;
+text-align:center;
+margin-bottom:20px;
+}
+
+.sidebar a{
+display:block;
+color:white;
+text-decoration:none;
+padding:12px 20px;
+font-weight:bold;
+}
+
+.sidebar a:hover{
+background:rgba(255,255,255,.2);
+}
+
+.main-content{
+margin-left:235px;
+padding:15px;
+}
+
+</style>
+</head>
+<body>
+    <div class="sidebar">
+
+<h3>Marksheet Menu</h3>
+
+<a href="student-list.html">
+Student List
+</a>
+
+<a href="marksheet-preview.html">
+Marksheet Preview
+</a>
+<a href="marksheet.html">
+Marksheet
+</a>
+
+<a href="add-marksheet.html">
+Add Marksheet
+</a>
+
+</div>
+
+<div class="main-content">
+
+<div class="header">Student List</div>
+
+<button class="logout-btn" onclick="logout()">
+Logout
+</button>
+
+<input
+type="text"
+id="searchInput"
+class="search"
+placeholder="Search Student">
+
+<div class="class-grid">
+<button class="class-btn" onclick="filterClass('PREPRIMARY')">PREPRIMARY</button>
+
+<button class="class-btn" onclick="filterClass('Nursery')">Nursery</button>
+<button class="class-btn" onclick="filterClass('LKG')">LKG</button>
+<button class="class-btn" onclick="filterClass('UKG')">UKG</button>
+
+<button class="class-btn" onclick="filterClass('1')">1</button>
+<button class="class-btn" onclick="filterClass('2')">2</button>
+<button class="class-btn" onclick="filterClass('3')">3</button>
+<button class="class-btn" onclick="filterClass('4')">4</button>
+
+<button class="class-btn" onclick="filterClass('5')">5</button>
+<button class="class-btn" onclick="filterClass('6')">6</button>
+<button class="class-btn" onclick="filterClass('7')">7</button>
+<button class="class-btn" onclick="filterClass('8')">8</button>
+
+<button class="class-btn" onclick="filterClass('9')">9</button>
+<button class="class-btn" onclick="filterClass('10')">10</button>
+<button class="class-btn" onclick="filterClass('11')">11</button>
+<button class="class-btn" onclick="filterClass('12')">12</button>
+
+</div>
+
+<div id="studentContainer">
+<div class="loading">Loading Students...</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script src="student-list.js"></script>
+</div>
+</body>
+</html>
