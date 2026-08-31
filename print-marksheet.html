@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Print Marksheet</title>
+
+<style>
+
+body{
+font-family:Arial,sans-serif;
+background:#ffffff;
+margin:0;
+padding:1px;
+}
+
+.actions{
+margin-bottom:1px;
+display:flex;
+gap:1px;
+}
+
+.btn{
+padding:10px 20px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+color:white;
+}
+
+.print-btn{
+background:#1976d2;
+}
+
+.download-btn{
+background:#28a745;
+}
+
+.marksheet{
+max-width:980px;
+margin:auto;
+background:white;
+padding:10px;
+border:3px solid #000;
+box-shadow:0 2px 8px rgba(0,0,0,.15);
+box-sizing:border-box;
+margin bottom :10px;
+}
+
+.school-header{
+    display:flex;
+    align-items:center;
+    text-align:left;
+    margin-bottom:0px;
+}
+
+.school-logo{
+    width:120px;
+    height:120px;
+    object-fit:contain;
+    margin-right:15px;
+}
+
+.school-name{
+font-size:26px;
+font-weight:bold;
+}
+
+.school-address{
+font-size:17px;
+}
+.marksheet-title{
+font-size:20px;
+font-weight:bold;
+text-align:center;
+margin-top:5px;
+margin-bottom:5px;
+letter-spacing:2px;
+}
+
+.grade-box{
+     margin-top:40px;
+border:2px solid #000;
+width:120px;
+padding:1px;
+text-align:center;
+font-weight:bold;
+}
+
+.percentage-box{
+border:2px solid #000;
+padding:1px;
+width:220px;
+text-align:center;
+font-weight:bold;
+}
+
+.result-section{
+    display:grid;
+    grid-template-columns:220px 1fr 120px;
+    column-gap:20px;
+    align-items:start;
+    margin-top:2px;
+    margin-bottom:2px;
+    width:100%;
+}
+.signature-section{
+    
+    
+margin-top:70px;
+display:flex;
+justify-content:space-between;
+page-break-inside:avoid;
+break-inside:avoid;
+}
+
+.signature{
+text-align:center;
+width:220px;
+}
+
+.signature img{
+height:60px;
+margin-top:25px;
+margin-bottom:1px;
+max-width:200px;
+}
+
+.student-info{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin:2px 0;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:1px;
+}
+
+th,td{
+border:1px solid #000;
+border-collapse:collapse;
+padding:5px;
+text-align:center;
+}
+
+.summary{
+margin-top:20px;
+font-size:18px;
+font-weight:bold;
+line-height:35px;
+}
+
+@media print{
+
+.actions{
+display:none;
+}
+
+body{
+background:white;
+padding:20px;
+margin bottm :10px;
+}
+
+.marksheet{
+box-shadow:none;
+border:3px;
+}
+
+}
+.semester-summary{
+    grid-column:2;
+    margin:0;
+    width:100%;
+}
+
+.semester-summary h3{
+text-align:center;
+margin-bottom:1px;
+}
+
+#semesterSummaryTable{
+width:90%;
+border-collapse:collapse;
+}
+
+#semesterSummaryTable th,
+#semesterSummaryTable td{
+border:1px solid #000;
+padding:1px;
+text-align:center;
+}
+.grade-table-box{
+      margin-top:40px;
+    width:220px;
+    padding:1px;
+    box-sizing:border-box;
+}
+
+.grade-table{
+     
+    width:100%;
+    border-collapse:collapse;
+    margin:0;
+    font-size:16px;
+    font-weight:bold;
+}
+
+.grade-table td{
+    border:1px solid #000;
+    padding:4px 6px;
+    text-align:center;
+}
+
+.grade-table .grade-title{
+    font-size:18px;
+    font-weight:bold;
+    padding:5px;
+}
+.school-header-text{
+    flex:1;
+    text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="actions">
+
+<button
+class="btn print-btn"
+onclick="window.print()">
+Print
+</button>
+
+<button
+class="btn download-btn"
+onclick="downloadPDF()">
+Download PDF
+</button>
+
+</div>
+
+<div class="marksheet">
+
+<div class="school-header">
+
+<img
+id="schoolLogo"
+class="school-logo"
+src="">
+
+<div class="school-header-text">
+
+<div
+id="schoolName"
+class="school-name">
+Loading...
+</div>
+
+<div
+id="schoolAddress"
+class="school-address">
+</div>
+
+<div class="marksheet-title">
+MARK SHEET
+</div>
+
+</div>
+
+</div>
+
+<hr>
+
+<div class="student-info">
+
+<div>
+<b>Name:</b>
+<span id="studentName"></span>
+</div>
+
+<div>
+<b>Roll:</b>
+<span id="studentRoll"></span>
+</div>
+
+<div>
+<b>Class:</b>
+<span id="studentClass"></span>
+</div>
+
+<div>
+<b>Semester:</b>
+<span id="studentSemester"></span>
+</div>
+
+<div>
+<b>Session:</b>
+<span id="studentSession"></span>
+</div>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th rowspan="2">
+Subject
+</th>
+
+<th colspan="3">
+Total Marks
+</th>
+
+<th colspan="3">
+Marks Obtained
+</th>
+
+</tr>
+
+<tr>
+
+<th>Written</th>
+<th>Oral</th>
+<th>Total</th>
+
+<th>Written</th>
+<th>Oral</th>
+<th>Total</th>
+
+</tr>
+
+</thead>
+
+<tbody id="subjectTable">
+</tbody>
+
+</table>
+
+<div class="result-section">
+
+    <!-- GRADE TABLE -->
+    <div class="percentage-box grade-table-box">
+
+        <table class="grade-table">
+
+            <tr>
+                <td colspan="2" class="grade-title">
+                    GRADE TABLE
+                </td>
+            </tr>
+
+            <tr>
+                <td>90-100</td>
+                <td>AA</td>
+            </tr>
+
+            <tr>
+                <td>80-89</td>
+                <td>A+</td>
+            </tr>
+
+            <tr>
+                <td>60-79</td>
+                <td>A</td>
+            </tr>
+
+            <tr>
+                <td>45-59</td>
+                <td>B+</td>
+            </tr>
+
+            <tr>
+                <td>35-44</td>
+                <td>B</td>
+            </tr>
+
+            <tr>
+                <td>25-34</td>
+                <td>C</td>
+            </tr>
+
+            <tr>
+                <td>Below 25</td>
+                <td>D</td>
+            </tr>
+
+        </table>
+
+        <span id="totalMarks" style="display:none;">0</span>
+        <span id="percentage" style="display:none;">0</span>
+
+    </div>
+
+
+    <!-- SEMESTER SUMMARY -->
+    <div class="semester-summary">
+
+        <h3>Semester Summary</h3>
+
+        <table id="semesterSummaryTable">
+
+            <thead>
+                <tr>
+                    <th>Semester</th>
+                    <th>Total Marks</th>
+                    <th>Marks Obtained</th>
+                    <th>Percentage</th>
+                    <th>Grade</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- CURRENT GRADE -->
+    <div class="grade-box">
+
+        <div>
+            GRADE
+        </div>
+
+        <div
+            id="grade"
+            style="
+                margin-top:1px;
+                font-size:70px;
+                font-weight:900;
+            ">
+            -
+        </div>
+
+    </div>
+
+</div>
+
+
+
+</div>
+<div class="signature-section">
+
+<div class="signature">
+
+<img
+id="principalSignature"
+src="">
+
+<div style="
+width:250px;
+border-top:2px solid #000;
+margin:1px auto;
+
+
+"></div>
+
+<div>
+PRINCIPAL SIGNATURE
+</div>
+
+</div>
+
+<div class="signature">
+
+<div style="
+width:230px;
+border-top:2px solid #000;
+margin:100px  auto 10px ;
+"></div>
+
+<div>
+CLASS TEACHER SIGNATURE
+</div>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+
+
+<script>
+
+function downloadPDF(){
+
+const element =
+document.querySelector(".marksheet");
+
+html2pdf()
+.set({
+    
+
+margin:[5,5,5,5],
+pagebreak:{
+mode:['avoid-all']
+},
+
+filename:"marksheet.pdf",
+
+html2canvas:{
+scale:2,
+backgroundColor:"#ffffff"
+},
+
+jsPDF:{
+unit:"mm",
+format:"a4",
+orientation:"portrait"
+}
+
+})
+.from(element)
+.save();
+
+}
+
+</script>
+<script src="print-marksheet.js"></script>
+
+</body>
+</html>
