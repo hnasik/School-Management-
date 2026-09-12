@@ -182,27 +182,92 @@ const marksheet =
 marksheetSnapshot.docs[0].data();
 
 // ===================================
-// LOAD TOTAL MARKS FROM SCHOOL SETTINGS
+// LOAD SUBJECTS FROM SCHOOL SETTINGS
+// WITH CLASS NAME COMPATIBILITY
 // ===================================
 
-const semesterDocs =
-await db
-.collection("school_settings")
-.doc(user.uid)
-.collection("classes")
-.doc(student.studentClass)
-.collection("semesters")
-.where("semester","==",semester)
-.limit(1)
-.get();
+const className = student.studentClass;
+
+// Firestore-? class document-?? possible ???
+const classNameOptions = {
+    "Nursery": [
+        "Nursery",
+        "NURSERY",
+        "nursery"
+    ],
+
+    "LKG": [
+        "LKG",
+        "KG 1",
+        "KG1",
+        "kg1"
+    ],
+
+    "UKG": [
+        "UKG",
+        "KG 2",
+        "KG2",
+        "kg2"
+    ]
+};
+
+// ??? special class ?? ??,
+// ????? normal class name ??????? ????
+const possibleClassNames =
+    classNameOptions[className] ||
+    [className];
+
+let semesterDocs = null;
+
+// ??? ??? possible Firestore class document check ????
+for (const firestoreClassName of possibleClassNames) {
+
+    const tempSemesterDocs =
+        await db
+        .collection("school_settings")
+        .doc(user.uid)
+        .collection("classes")
+        .doc(firestoreClassName)
+        .collection("semesters")
+        .where("semester", "==", semester)
+        .limit(1)
+        .get();
+
+    // Semester document ????? ????
+    // ????? ??????? ????
+    if (!tempSemesterDocs.empty) {
+
+        semesterDocs =
+            tempSemesterDocs;
+
+        break;
+    }
+}
 
 let settingsSubjects = [];
 
-if(!semesterDocs.empty){
+// ????? semester ???? subjects load ????
+if (
+    semesterDocs &&
+    !semesterDocs.empty
+) {
 
-settingsSubjects =
-semesterDocs.docs[0].data().subjects || [];
+    settingsSubjects =
+        semesterDocs
+        .docs[0]
+        .data()
+        .subjects || [];
 
+} else {
+
+    console.warn(
+        "No semester subjects found for:",
+        {
+            selectedClass: className,
+            possibleClassNames,
+            semester
+        }
+    );
 }
 const summarySnapshot =
 await db
