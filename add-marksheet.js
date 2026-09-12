@@ -110,33 +110,71 @@ await loadClassSubjects(
 }
 async function loadSemesters(uid, className){
 
- const select =
- document.getElementById("semesterInput");
+  const select =
+  document.getElementById("semesterInput");
 
- select.innerHTML =
- '<option value="">Select Semester</option>';
+  select.innerHTML =
+  '<option value="">Select Semester</option>';
 
- const snapshot =
- await db
- .collection("school_settings")
- .doc(uid)
- .collection("classes")
- .doc(className)
- .collection("semesters")
- .get();
+  // Keep all existing class names working
+  let classNames = [String(className || "").trim()];
 
- snapshot.forEach(doc=>{
+  const normalizedClass =
+    String(className || "").trim().toLowerCase();
 
-   const data = doc.data();
+  // LKG / UKG compatibility
+  if(normalizedClass === "lkg"){
+    classNames = ["LKG", "KG 1", "KG1", "kg1"];
+  }
 
-  select.innerHTML += `
-<option
-value="${data.semester}"
-data-docid="${doc.id}">
-${data.semester}
-</option>
-`;
- });
+  if(normalizedClass === "ukg"){
+    classNames = ["UKG", "KG 2", "KG2", "kg2"];
+  }
+
+  let snapshot = null;
+  let usedClassName = classNames[0];
+
+  // Try class names one by one
+  for(const name of classNames){
+
+    const result =
+      await db
+      .collection("school_settings")
+      .doc(uid)
+      .collection("classes")
+      .doc(name)
+      .collection("semesters")
+      .get();
+
+    if(!result.empty){
+      snapshot = result;
+      usedClassName = name;
+      break;
+    }
+  }
+
+  if(!snapshot){
+    console.log(
+      "No semesters found for class:",
+      className
+    );
+    return;
+  }
+
+  snapshot.forEach(doc=>{
+
+    const data = doc.data();
+
+    select.innerHTML += `
+      <option
+        value="${data.semester}"
+        data-docid="${doc.id}"
+        data-classname="${usedClassName}">
+        ${data.semester}
+      </option>
+    `;
+
+  });
 
 }
 document
@@ -156,6 +194,9 @@ document.getElementById("semesterInput");
 const semesterDocId =
 select.options[select.selectedIndex]
 .dataset.docid;
+const semesterClassName =
+select.options[select.selectedIndex]
+.dataset.classname || currentStudent.studentClass;
 
  if(!semesterDocId) return;
 
@@ -164,7 +205,7 @@ select.options[select.selectedIndex]
  .collection("school_settings")
  .doc(auth.currentUser.uid)
  .collection("classes")
- .doc(currentStudent.studentClass)
+.doc(semesterClassName)
  .collection("semesters")
  .doc(semesterDocId)
  .get();
