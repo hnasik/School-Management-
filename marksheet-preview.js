@@ -69,13 +69,13 @@ const classNameOptions = {
     "UKG": ["UKG", "KG 2", "KG2", "kg2"]
 };
 
-// Selected class-এর জন্য possible Firestore document names
+// Selected class-?? ???? possible Firestore document names
 const possibleClassNames =
     classNameOptions[className] || [className];
 
 let semesterSnapshot = null;
 
-// একে একে Firestore class document check করবে
+// ??? ??? Firestore class document check ????
 for (const firestoreClassName of possibleClassNames) {
 
     const tempSnapshot =
@@ -87,14 +87,14 @@ for (const firestoreClassName of possibleClassNames) {
         .collection("semesters")
         .get();
 
-    // Semester পাওয়া গেলে সেটাই ব্যবহার করবে
+    // Semester ????? ???? ????? ??????? ????
     if (!tempSnapshot.empty) {
         semesterSnapshot = tempSnapshot;
         break;
     }
 }
 
-// কোনো semester না পেলে empty snapshot-এর মতো handle করবে
+// ???? semester ?? ???? empty snapshot-?? ??? handle ????
 if (!semesterSnapshot) {
 
     console.warn(
