@@ -62,14 +62,51 @@ id:doc.id,
 ...doc.data()
 };
 
-const semesterSnapshot =
-await db
-.collection("school_settings")
-.doc(auth.currentUser.uid)
-.collection("classes")
-.doc(className)
-.collection("semesters")
-.get();
+// Class document name compatibility
+const classNameOptions = {
+    "Nursery": ["Nursery", "NURSERY", "nursery"],
+    "LKG": ["LKG", "KG 1", "KG1", "kg1"],
+    "UKG": ["UKG", "KG 2", "KG2", "kg2"]
+};
+
+// Selected class-এর জন্য possible Firestore document names
+const possibleClassNames =
+    classNameOptions[className] || [className];
+
+let semesterSnapshot = null;
+
+// একে একে Firestore class document check করবে
+for (const firestoreClassName of possibleClassNames) {
+
+    const tempSnapshot =
+        await db
+        .collection("school_settings")
+        .doc(auth.currentUser.uid)
+        .collection("classes")
+        .doc(firestoreClassName)
+        .collection("semesters")
+        .get();
+
+    // Semester পাওয়া গেলে সেটাই ব্যবহার করবে
+    if (!tempSnapshot.empty) {
+        semesterSnapshot = tempSnapshot;
+        break;
+    }
+}
+
+// কোনো semester না পেলে empty snapshot-এর মতো handle করবে
+if (!semesterSnapshot) {
+
+    console.warn(
+        "No semesters found for class:",
+        className,
+        possibleClassNames
+    );
+
+    semesterSnapshot = {
+        forEach: function () {}
+    };
+}
 
 let buttons = "";
 
