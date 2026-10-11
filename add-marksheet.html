@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Add Marksheet</title>
+
+<style>
+
+body{
+font-family:Arial,sans-serif;
+background:#f5f5f5;
+margin:0;
+padding:15px;
+}
+
+.card{
+background:#fff;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+h2{
+margin-top:0;
+}
+
+.student-info div{
+margin-bottom:8px;
+}
+
+.subject-row{
+display:grid;
+grid-template-columns:2fr 1fr 1fr;
+gap:5px;
+margin-bottom:10px;
+}
+
+input{
+width:100%;
+padding:10px;
+border:1px solid #ccc;
+border-radius:6px;
+box-sizing:border-box;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#28a745;
+color:white;
+border:none;
+border-radius:8px;
+font-size:16px;
+font-weight:bold;
+}
+
+.summary{
+font-size:16px;
+font-weight:bold;
+line-height:30px;
+}
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+width:220px;
+height:100%;
+background:#1976d2;
+padding-top:20px;
+box-sizing:border-box;
+}
+
+.sidebar h3{
+color:white;
+text-align:center;
+margin-bottom:20px;
+}
+
+.sidebar a{
+display:block;
+color:white;
+text-decoration:none;
+padding:12px 20px;
+font-weight:bold;
+}
+
+.sidebar a:hover{
+background:rgba(255,255,255,.2);
+}
+
+.main-content{
+margin-left:235px;
+padding:15px;
+}
+
+</style>
+</head>
+
+<body>
+    <div class="sidebar">
+
+<h3>Marksheet Menu</h3>
+
+<a href="student-list.html">
+Student List
+</a>
+<a href="index.html" class="nav-link">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+
+
+<a href="marksheet-preview.html">
+Marksheet Preview
+</a>
+<a href="marksheet.html">
+ Marksheet
+</a>
+
+<a href="add-marksheet.html">
+Add Marksheet
+</a>
+
+</div>
+
+<div class="main-content">
+
+<div class="card">
+
+<h2>Student Information</h2>
+
+<div id="studentInfo" class="student-info">
+Loading...
+</div>
+
+<hr style="margin:15px 0;">
+
+<label><b>Semester</b></label>
+
+<select id="semesterInput">
+   <option value="">Select Semester</option>
+</select>
+style="
+width:100%;
+padding:10px;
+margin-top:8px;
+border:1px solid #ccc;
+border-radius:6px;
+">
+
+</div>
+
+<div class="card">
+
+<div class="summary">
+    <h2>Subject Marks Entry</h2>
+
+<div id="subjectsContainer"></div>
+
+<div>Total: <span id="totalMarks">0</span></div>
+
+<div>Percentage: <span id="percentage">0</span>%</div>
+
+<div>Grade: <span id="grade">-</span></div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<button onclick="saveMarksheet()">
+Save Marksheet
+</button>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<script src="add-marksheet.js"></script>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Payment History | School Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* ================= RESET ================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #1a1c2e 0%, #2d3561 50%, #1a1c2e 100%);
+  min-height: 100vh;
+  color: #e2e8f0;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ================= LAYOUT ================= */
+#app {
+  display: flex;
+  min-height: 100vh;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  width: 260px;
+  background: rgba(26, 28, 46, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 1.8rem 1.2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  height: fit-content;
+  position: sticky;
+  top: 24px;
+}
+
+.sidebar h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  margin-bottom: 6px;
+  color: #cbd5e0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%; width: 3px;
+  background: linear-gradient(to bottom, #667eea, #764ba2);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.nav-link i {
+  width: 20px;
+  text-align: center;
+  color: #a0aec0;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: rgba(102, 126, 234, 0.15);
+  color: #fff;
+  font-weight: 600;
+  transform: translateX(5px);
+}
+
+.nav-link:hover::before,
+.nav-link.active::before {
+  transform: translateX(0);
+}
+
+/* ================= MAIN ================= */
+.main { flex: 1; min-width: 0; }
+
+/* ================= TOPBAR ================= */
+.topbar {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1.4rem 2rem;
+  border-radius: 22px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.topbar h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #2d3561;
+}
+
+.topbar h1 i { color: #667eea; }
+
+.topbar .welcome-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+}
+
+/* ================= CARD ================= */
+.section {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1.8rem;
+  border-radius: 22px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.section-head .icon-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.35);
+  flex-shrink: 0;
+}
+
+.section-head h2 {
+  color: #2d3561;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.section-head p {
+  color: #718096;
+  font-size: 0.82rem;
+  margin-top: 2px;
+}
+
+/* ================= FILTERS ================= */
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 1.5rem;
+}
+
+.filter-item { position: relative; }
+
+.filter-item label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-item label i { color: #667eea; font-size: 0.75rem; }
+
+.filter-item .select-wrap { position: relative; }
+
+.filter-item .select-wrap::after {
+  content: "\f107";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+  pointer-events: none;
+  font-size: 0.8rem;
+}
+
+select {
+  width: 100%;
+  padding: 12px 40px 12px 16px;
+  border-radius: 14px;
+  border: 1.5px solid #e5e7eb;
+  background: #f9fafb;
+  font-size: 0.92rem;
+  font-family: inherit;
+  color: #2d3748;
+  font-weight: 500;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+select:hover { border-color: #cbd5e0; background: #fff; }
+
+select:focus {
+  outline: none;
+  border-color: #667eea;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+}
+
+/* ================= STUDENT LIST ================= */
+.student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.student-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 16px;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default;
+}
+
+.student-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.12);
+  transform: translateY(-2px);
+}
+
+.student-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 6px 14px rgba(102, 126, 234, 0.28);
+}
+
+.student-info { flex: 1; min-width: 0; }
+
+.student-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a202c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-class {
+  font-size: 0.78rem;
+  color: #718096;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.student-class i { color: #667eea; font-size: 0.7rem; }
+
+/* ================= BUTTONS ================= */
+button {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+button:hover:not(.btn-disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+button:active:not(.btn-disabled) { transform: translateY(0); }
+
+.btn-history {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-paid-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.btn-paid-green { background: linear-gradient(135deg, #10b981, #059669); }
+.btn-unpaid { background: linear-gradient(135deg, #6b7280, #4b5563); }
+.btn-print {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  padding: 8px 12px;
+}
+
+.btn-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* ================= HISTORY ================= */
+.history-box {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 2px dashed #e5e7eb;
+}
+
+#studentTitle {
+  color: #2d3561;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+  border-left: 4px solid #667eea;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#studentTitle::before {
+  content: "\f007";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  color: #667eea;
+  font-size: 0.95rem;
+}
+
+.month {
+  display: grid;
+  grid-template-columns: 170px 120px auto auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 14px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.month:hover { border-color: #cbd5e0; background: #fafbfc; }
+
+.month.paid {
+  border-color: #a7f3d0;
+  background: linear-gradient(135deg, #f0fdf4, #ffffff);
+}
+
+/* Custom month highlight */
+.month.custom-month {
+  border-color: #fcd34d;
+  background: linear-gradient(135deg, #fffbeb, #ffffff);
+  border-style: dashed;
+}
+
+.month.custom-month.paid {
+  border-color: #a7f3d0;
+  background: linear-gradient(135deg, #f0fdf4, #ffffff);
+  border-style: solid;
+}
+
+.month strong {
+  color: #2d3561;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.month strong i { color: #667eea; font-size: 0.85rem; }
+
+.month input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #e5e7eb;
+  font-size: 0.85rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: #2d3561;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+.month input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+}
+
+/* Custom month badge */
+.custom-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 8.5px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 999px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(245, 158, 11, 0.3);
+}
+
+.custom-badge i { font-size: 7px; color: #fff; }
+
+/* Remove custom month button */
+button.btn-remove-custom {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  margin-left: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: none !important;
+  flex-shrink: 0;
+}
+
+button.btn-remove-custom:hover {
+  background: #dc2626 !important;
+  color: #fff !important;
+  transform: scale(1.12) !important;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.35) !important;
+}
+
+/* ================= ADD MONTH BUTTON ================= */
+.add-month-wrap {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+button.btn-add-month {
+  background: transparent;
+  color: #667eea;
+  border: 2px dashed #667eea;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  box-shadow: none;
+}
+
+button.btn-add-month:hover {
+  background: rgba(102, 126, 234, 0.08);
+  border-style: solid;
+  color: #4f46e5;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(102, 126, 234, 0.18);
+}
+
+/* ================= ADD MONTH PANEL ================= */
+.add-month-panel {
+  margin-top: 14px;
+  padding: 18px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.amp-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #2d3561;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.amp-title i { color: #667eea; }
+
+.amp-desc {
+  font-size: 0.78rem;
+  color: #718096;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.amp-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.amp-field label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #4a5568;
+  margin-bottom: 5px;
+}
+
+.amp-field select,
+.amp-field input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  font-size: 0.9rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: #2d3561;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.amp-field select:focus,
+.amp-field input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+}
+
+.amp-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+button.amp-cancel {
+  background: #e5e7eb;
+  color: #4a5568;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+button.amp-cancel:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+button.amp-confirm {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  padding: 9px 20px;
+  border-radius: 999px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+button.amp-confirm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* ================= EMPTY / LOADING ================= */
+.empty-state, .loading-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #718096;
+}
+
+.empty-state i, .loading-state i {
+  font-size: 2.4rem;
+  color: #cbd5e0;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.empty-state h3 {
+  color: #4a5568;
+  font-size: 1rem;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.empty-state p { font-size: 0.85rem; color: #a0aec0; }
+
+.loading-state i {
+  color: #667eea;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ================= TOAST ================= */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1a202c;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: linear-gradient(135deg, #10b981, #059669); }
+.toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.toast.info { background: linear-gradient(135deg, #667eea, #764ba2); }
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  #app { flex-direction: column; padding: 12px; gap: 12px; }
+  .sidebar { width: 100%; position: static; padding: 1rem; }
+  .sidebar h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+  .nav-link { padding: 0.6rem 0.8rem; font-size: 0.85rem; }
+  .topbar { padding: 1rem 1.2rem; }
+  .topbar h1 { font-size: 1.2rem; }
+  .section { padding: 1.2rem; }
+  .filters { grid-template-columns: 1fr; }
+  .month {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .month strong { grid-column: 1 / -1; }
+  .student-card { flex-wrap: wrap; }
+  .student-card .btn-history { width: 100%; }
+  .amp-fields { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2><i class="fas fa-graduation-cap"></i> School Panel</h2>
+
+    <a href="index.html" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <a href="student.html" class="nav-link"><i class="fas fa-user-graduate"></i> Students</a>
+    <a href="teacher.html" class="nav-link"><i class="fas fa-chalkboard-teacher"></i> Teachers</a>
+    <a href="id-card.html" class="nav-link"><i class="fas fa-id-card"></i> ID Card</a>
+    <a href="book-delivery-report.html" class="nav-link"><i class="fas fa-book-open"></i> Book Delivery Report</a>
+    <a href="admit_card.html" class="nav-link"><i class="fas fa-id-card"></i> Admit Card</a>
+    <a href="marksheet.html" class="nav-link"><i class="fas fa-file-alt"></i> Marksheet</a>
+    <a href="settle-due.html" class="nav-link"><i class="fas fa-rupee-sign"></i> Settle Due Amount</a>
+    <a href="payment-history.html" class="nav-link active"><i class="fas fa-history"></i> Payment History</a>
+    <a href="download.html" class="nav-link"><i class="fas fa-download"></i> Download</a>
+    <a href="print.html" class="nav-link"><i class="fas fa-print"></i> Print Admission</a>
+    <a href="edit.html" class="nav-link"><i class="fas fa-pen-to-square"></i> Edit Student</a>
+
+    <div class="nav-link logout-btn" id="logout-btn">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="topbar">
+      <h1><i class="fas fa-history"></i> Payment History</h1>
+      <span class="welcome-chip"><i class="fas fa-user-shield"></i> Welcome, Admin</span>
+    </div>
+
+    <section class="section">
+
+      <div class="section-head">
+        <div class="icon-badge"><i class="fas fa-filter"></i></div>
+        <div>
+          <h2>Select Class &amp; Session</h2>
+          <p>Choose a class and academic year to view students and their payment history</p>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div class="filter-item">
+          <label><i class="fas fa-calendar-alt"></i> Academic Year</label>
+          <div class="select-wrap">
+            <select id="academicYearSelect"></select>
+          </div>
+        </div>
+
+        <div class="filter-item">
+          <label><i class="fas fa-school"></i> Class</label>
+          <div class="select-wrap">
+            <select id="classSelect">
+              <option value="">Select Class</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="studentListContainer">
+        <div class="empty-state">
+          <i class="fas fa-users"></i>
+          <h3>No students loaded</h3>
+          <p>Select a class and academic year above to begin</p>
+        </div>
+      </div>
+
+      <div id="paymentHistory" class="history-box" style="display:none;">
+        <h3 id="studentTitle" style="margin-bottom:10px;"></h3>
+        <div id="monthList"></div>
+      </div>
+
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<script src="payment-history.js"></script>
+</body>
+</html>

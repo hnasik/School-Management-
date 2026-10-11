@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Settle Due Amount | School Management System</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Premium palette — unified brand */
+      --brand-deep: #3b0764;
+      --brand-rich: #4c1d95;
+      --brand-mid: #6d28d9;
+      --brand-light: #7c3aed;
+      --brand-glow: #a855f7;
+      --brand-soft: #c084fc;
+
+      --gold: #fbbf24;
+      --gold-warm: #f59e0b;
+
+      --surface: #ffffff;
+      --surface-soft: #faf8ff;
+      --surface-tint: #f5f3ff;
+
+      --text-strong: #0f172a;
+      --text-primary: #1e1b4b;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+
+      --success: #10b981;
+      --success-deep: #059669;
+      --danger: #ef4444;
+      --danger-deep: #dc2626;
+      --warning: #f59e0b;
+
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --radius-lg: 20px;
+      --radius-xl: 26px;
+
+      --shadow-soft: 0 4px 14px -6px rgba(74, 20, 140, 0.08);
+      --shadow-md: 0 12px 32px -10px rgba(74, 20, 140, 0.18);
+      --shadow-lg: 0 24px 60px -20px rgba(74, 20, 140, 0.32);
+      --shadow-glow: 0 18px 40px -12px rgba(124, 58, 237, 0.45);
+
+      --transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 45%, #4c1d95 100%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      position: relative;
+      font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(168, 85, 247, 0.28), transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.18), transparent 45%),
+        radial-gradient(circle at 50% 100%, rgba(59, 130, 246, 0.12), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #app {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ================= SIDEBAR ================= */
+    .sidebar {
+      width: 260px;
+      padding: 2rem 1rem;
+      background: linear-gradient(180deg, rgba(15, 4, 40, 0.85), rgba(59, 7, 100, 0.85));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      color: #ecf0f1;
+      box-shadow: 4px 0 30px rgba(0, 0, 0, 0.35);
+      border-right: 1px solid rgba(168, 85, 247, 0.15);
+      transition: var(--transition);
+    }
+    .sidebar h2 {
+      margin-bottom: 2rem;
+      text-align: center;
+      color: #ffffff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .sidebar h2 i {
+      font-size: 1.6rem;
+      background: linear-gradient(135deg, var(--brand-glow), var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 0.78rem 1rem;
+      border-radius: 12px;
+      margin-bottom: 0.35rem;
+      color: rgba(255, 255, 255, 0.72);
+      text-decoration: none;
+      transition: var(--transition);
+      gap: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      position: relative;
+    }
+    .nav-link i {
+      width: 20px;
+      text-align: center;
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+    .nav-link:hover {
+      background: rgba(168, 85, 247, 0.12);
+      color: #fff;
+      transform: translateX(4px);
+    }
+    .nav-link.active {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(236, 72, 153, 0.15));
+      color: #fff;
+      font-weight: 600;
+      box-shadow:
+        0 6px 18px -6px rgba(168, 85, 247, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .nav-link.active i { opacity: 1; color: var(--gold); }
+    .logout-btn {
+      margin-top: 2rem;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(220, 38, 38, 0.12));
+      text-align: center;
+      color: #fecaca;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+    .logout-btn:hover {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    /* ================= MAIN ================= */
+    .main {
+      flex: 1;
+      padding: 2rem;
+      overflow: auto;
+      min-width: 0;
+    }
+
+    /* ================= TOPBAR ================= */
+    .topbar {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 1.5rem 2rem;
+      border-radius: var(--radius-lg);
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow:
+        0 12px 40px -12px rgba(15, 4, 40, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .topbar h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--brand-deep);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .topbar h1 i {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--brand-mid), var(--brand-glow));
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      box-shadow: 0 8px 20px -6px rgba(124, 58, 237, 0.5);
+    }
+    #page-welcome {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--brand-rich);
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(168, 85, 247, 0.06));
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(124, 58, 237, 0.15);
+    }
+    #page-welcome i { color: var(--brand-mid); }
+
+    /* ================= SECTION ================= */
+    .section {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 2rem 2.2rem;
+      border-radius: var(--radius-lg);
+      box-shadow:
+        0 20px 60px -20px rgba(15, 4, 40, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+    .section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand-deep), var(--brand-mid), var(--brand-glow), var(--gold));
+    }
+
+    .section-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      color: var(--brand-deep);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 0.9rem;
+      border-bottom: 2px solid rgba(124, 58, 237, 0.08);
+    }
+    .section-title i {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--brand-rich), var(--brand-mid));
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      box-shadow: 0 8px 20px -8px rgba(76, 29, 149, 0.5);
+    }
+
+    .txt-muted {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.5;
+    }
+    .txt-muted i { color: var(--brand-mid); }
+
+    /* ============================================================
+       UNIFIED PREMIUM CLASS CARDS — SAME SIZE, SAME COLOR
+       ============================================================ */
+    .class-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 1.15rem;
+      margin-top: 1.5rem;
+    }
+
+    .class-card {
+      position: relative;
+      aspect-ratio: 1.2 / 1;
+      border-radius: 20px;
+      padding: 1.4rem 0.9rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      overflow: hidden;
+
+      /* SAME gradient for EVERY card */
+      background: linear-gradient(145deg, #3b0764 0%, #4c1d95 40%, #6d28d9 100%);
+
+      border: 1px solid rgba(168, 85, 247, 0.28);
+
+      box-shadow:
+        0 12px 32px -10px rgba(59, 7, 100, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+      transition: var(--transition);
+    }
+
+    /* Soft glass highlight on top half */
+    .class-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent);
+      pointer-events: none;
+    }
+
+    /* Gold corner accent */
+    .class-card::after {
+      content: '';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 14px var(--gold), 0 0 3px rgba(255, 255, 255, 0.8);
+      opacity: 0.95;
+    }
+
+    .class-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      border-color: rgba(251, 191, 36, 0.55);
+      box-shadow:
+        0 24px 55px -14px rgba(124, 58, 237, 0.65),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      background: linear-gradient(145deg, #4c1d95 0%, #6d28d9 40%, #7c3aed 100%);
+    }
+    .class-card:active { transform: translateY(-3px) scale(1); }
+
+    .class-card .num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-align: center;
+      line-height: 1.2;
+      letter-spacing: -0.3px;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      padding: 0 6px;
+    }
+
+    .class-card .label {
+      font-size: 0.66rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.72);
+      text-align: center;
+      line-height: 1.4;
+      letter-spacing: 0.6px;
+      position: relative;
+      z-index: 1;
+      text-transform: uppercase;
+      padding: 0 6px;
+    }
+
+    /* ================= FULLY SETTLED BANNER ================= */
+    .settled-banner {
+      margin-top: 2.2rem;
+      padding: 1.5rem 1.8rem;
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 60%, #a7f3d0 100%);
+      border: 1.5px solid rgba(16, 185, 129, 0.35);
+      border-radius: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      box-shadow: 0 12px 30px -14px rgba(16, 185, 129, 0.35);
+    }
+    .settled-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+      min-width: 220px;
+    }
+    .settled-banner-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      box-shadow: 0 10px 22px -8px rgba(16, 185, 129, 0.55);
+      flex-shrink: 0;
+    }
+    .settled-banner-text h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #065f46;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+      margin-bottom: 3px;
+    }
+    .settled-banner-text p {
+      color: #047857;
+      font-size: 0.83rem;
+      margin: 0;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+    .settled-banner-btn {
+      padding: 0.85rem 1.5rem;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.88rem;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 22px -8px rgba(16, 185, 129, 0.55);
+      transition: var(--transition);
+      letter-spacing: 0.2px;
+    }
+    .settled-banner-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px -10px rgba(16, 185, 129, 0.7);
+    }
+
+    /* ================= SETTLEMENT BUTTON (modal head) ================= */
+    .btn-settled-class {
+      padding: 7px 15px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.78rem;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 6px 16px -6px rgba(16, 185, 129, 0.55);
+      transition: var(--transition);
+      letter-spacing: 0.2px;
+    }
+    .btn-settled-class:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px -8px rgba(16, 185, 129, 0.7);
+    }
+
+    /* ============================================================
+       MODERN MODAL DESIGN
+       ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(123, 31, 162, 0.4), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.28), transparent 50%),
+        rgba(15, 4, 40, 0.78);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      padding: 20px;
+      animation: overlayFadeIn 0.28s ease-out;
+    }
+    .modal-overlay.show { display: flex; }
+
+    @keyframes overlayFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .modal {
+      background: linear-gradient(160deg, #ffffff 0%, #fbf8ff 60%, #f6f1ff 100%);
+      border-radius: 26px;
+      width: 92%;
+      max-width: 900px;
+      max-height: 88vh;
+      overflow: auto;
+      padding: 0;
+      box-shadow:
+        0 30px 80px -20px rgba(74, 20, 140, 0.45),
+        0 10px 30px -10px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      position: relative;
+      animation: modalPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: 1px solid rgba(156, 39, 176, 0.12);
+      transform-origin: center top;
+    }
+
+    @keyframes modalPop {
+      0%   { opacity: 0; transform: scale(0.92) translateY(20px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal::before {
+      content: '';
+      position: sticky;
+      top: 0;
+      display: block;
+      height: 5px;
+      background: linear-gradient(90deg, #4a148c, #7b1fa2, #9c27b0, #ec4899);
+      background-size: 300% 100%;
+      animation: shimmer 6s linear infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    .modal::-webkit-scrollbar { width: 8px; }
+    .modal::-webkit-scrollbar-track { background: transparent; }
+    .modal::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #c084fc, #a855f7);
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+    .modal::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #a855f7, #7c3aed); background-clip: padding-box; }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 1.6rem 2rem 1.2rem;
+      margin-bottom: 1.4rem;
+      background: linear-gradient(180deg, rgba(156, 39, 176, 0.06), transparent);
+      border-bottom: 1px solid rgba(156, 39, 176, 0.08);
+      gap: 16px;
+      position: sticky;
+      top: 5px;
+      z-index: 5;
+      backdrop-filter: blur(10px);
+      border-radius: 0 0 12px 12px;
+    }
+
+    .modal-head h3 {
+      color: var(--brand-deep);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      margin: 0;
+      line-height: 1.25;
+    }
+
+    .modal-head .txt-muted {
+      margin-top: 6px;
+      margin-bottom: 0;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--brand-mid);
+    }
+
+    .btn {
+      padding: 0.75rem 1.25rem;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-family: inherit;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-close {
+      background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+      color: #4b5563;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+    .btn-close:hover {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      transform: translateY(-2px) rotate(-2deg);
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+    }
+
+    #classModalBody,
+    #settledListContainer,
+    #dueListContainer {
+      padding: 0 2rem;
+    }
+    #dueListContainer { padding-bottom: 1.5rem; }
+    #settledListContainer { padding-bottom: 1.5rem; }
+
+    #modalNoResults,
+    #settledNoResults {
+      margin: 1rem 2rem 2rem !important;
+      padding: 1.2rem 1.5rem;
+      background: linear-gradient(135deg, #fef2f2, #fef3f2);
+      border-radius: 14px;
+      border: 1px dashed rgba(239, 68, 68, 0.35);
+      font-weight: 600;
+    }
+
+    /* ============================================================
+       STUDENT CARDS (in-class due list)
+       ============================================================ */
+    .student-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 1.1rem 1.3rem;
+      margin: 0.85rem 0;
+      border: 1.5px solid #ede9fe;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 14px -6px rgba(74, 20, 140, 0.08);
+    }
+    .student-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, #7b1fa2, #ec4899);
+      border-radius: 0 4px 4px 0;
+      opacity: 0.9;
+    }
+    .student-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px -8px rgba(123, 31, 162, 0.22);
+      border-color: #d8b4fe;
+      background: linear-gradient(135deg, #faf5ff 0%, #ffffff 100%);
+    }
+
+    .student-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      color: var(--brand-deep);
+      font-size: 1.02rem;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .settle-amount-input {
+      padding: 9px 12px !important;
+      border-radius: 12px !important;
+      border: 1.5px solid #e9d5ff !important;
+      width: 140px !important;
+      text-align: right !important;
+      font-family: inherit !important;
+      font-weight: 700 !important;
+      font-size: 0.9rem !important;
+      color: #4a148c !important;
+      background: linear-gradient(135deg, #ffffff, #faf5ff) !important;
+      transition: all 0.2s ease !important;
+      outline: none !important;
+    }
+    .settle-amount-input:focus {
+      border-color: #7b1fa2 !important;
+      box-shadow: 0 0 0 4px rgba(123, 31, 162, 0.12) !important;
+      background: #ffffff !important;
+    }
+    .settle-amount-input::placeholder {
+      color: #c4b5fd;
+      font-weight: 500;
+    }
+
+    .settle-btn {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 30px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .settle-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.45);
+      background: linear-gradient(135deg, #059669, #047857);
+    }
+
+    .history-btn {
+      background: linear-gradient(135deg, #f3e8ff, #ede9fe);
+      color: #6b21a8;
+      padding: 7px 16px;
+      border-radius: 30px;
+      border: 1px solid rgba(147, 51, 234, 0.15);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .history-btn:hover {
+      background: linear-gradient(135deg, #7b1fa2, #6b21a8);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(123, 31, 162, 0.3);
+    }
+
+    /* ============================================================
+       SETTLED STUDENT CARDS
+       ============================================================ */
+    .settled-student-card {
+      background: linear-gradient(155deg, #ffffff 0%, #f0fdf9 100%);
+      border: 1.5px solid #a7f3d0;
+      border-radius: 20px;
+      padding: 1.3rem 1.4rem;
+      margin: 1rem 0;
+      transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px -6px rgba(16, 185, 129, 0.12);
+    }
+    .settled-student-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      background: linear-gradient(180deg, #10b981, #059669);
+      border-radius: 0 5px 5px 0;
+    }
+    .settled-student-card:hover {
+      border-color: #10b981;
+      box-shadow: 0 16px 36px -10px rgba(16, 185, 129, 0.28);
+      transform: translateY(-3px);
+    }
+
+    .ssc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .ssc-left { flex: 1; min-width: 200px; }
+    .ssc-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      color: #065f46;
+      font-size: 1.05rem;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .ssc-name .check-icon {
+      color: #10b981;
+      font-size: 1.05rem;
+      filter: drop-shadow(0 2px 4px rgba(16, 185, 129, 0.4));
+    }
+    .ssc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35);
+    }
+    .ssc-meta {
+      font-size: 0.84rem;
+      color: #4b5563;
+      margin-top: 6px;
+      line-height: 1.55;
+      font-weight: 500;
+    }
+    .ssc-meta b { color: #065f46; font-weight: 700; }
+    .ssc-total {
+      display: inline-block;
+      font-size: 1.12rem;
+      font-weight: 800;
+      color: #059669;
+      letter-spacing: -0.3px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .ssc-print-btn {
+      background: linear-gradient(135deg, #4a148c, #7b1fa2 60%, #ec4899);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 6px 18px rgba(74, 20, 140, 0.32);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .ssc-print-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #ec4899, #7b1fa2);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .ssc-print-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 12px 28px rgba(236, 72, 153, 0.45);
+    }
+    .ssc-print-btn:hover::before { opacity: 1; }
+    .ssc-print-btn > * { position: relative; z-index: 1; }
+
+    .ssc-history {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1.5px dashed #a7f3d0;
+    }
+    .ssc-history-title {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #047857;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ssc-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+    .ssc-history-list::-webkit-scrollbar { width: 5px; }
+    .ssc-history-list::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #a7f3d0, #6ee7b7);
+      border-radius: 4px;
+    }
+
+    .ssc-history-row {
+      display: grid;
+      grid-template-columns: 32px 1fr auto auto auto;
+      gap: 12px;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    .ssc-history-row:hover {
+      border-color: #6ee7b7;
+      background: linear-gradient(135deg, #f0fdf4, #ffffff);
+      transform: translateX(3px);
+      box-shadow: 0 4px 12px -2px rgba(16, 185, 129, 0.15);
+    }
+    .ssc-history-row .idx {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.72rem;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
+    }
+    .ssc-history-row .date { color: #374151; font-weight: 700; font-size: 0.82rem; }
+    .ssc-history-row .prev {
+      color: #dc2626;
+      font-weight: 700;
+      font-size: 0.76rem;
+      white-space: nowrap;
+      padding: 3px 9px;
+      background: #fef2f2;
+      border-radius: 999px;
+    }
+    .ssc-history-row .arrow { color: #9ca3af; font-size: 0.72rem; }
+    .ssc-history-row .amt {
+      color: #059669;
+      font-weight: 800;
+      white-space: nowrap;
+      padding: 3px 9px;
+      background: #ecfdf5;
+      border-radius: 999px;
+      font-size: 0.78rem;
+    }
+    .ssc-history-row .newdue {
+      color: #d97706;
+      font-weight: 700;
+      font-size: 0.74rem;
+      white-space: nowrap;
+    }
+
+    .notification {
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+      font-weight: 600;
+    }
+    .notification::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+    }
+    .notification-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+    .notification-success::before { background: var(--success); }
+    .notification-error { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+    .notification-error::before { background: var(--danger); }
+    .notification i { font-size: 1.3rem; }
+
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(156, 39, 176, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--brand-mid);
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 720px) {
+      .class-grid { grid-template-columns: repeat(2, 1fr); }
+      .modal { width: 96%; max-height: 92vh; border-radius: 22px; }
+      .modal-head {
+        padding: 1.2rem 1.2rem 0.9rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .modal-head > div:last-child { align-self: flex-end; }
+      #classModalBody,
+      #settledListContainer,
+      #dueListContainer { padding: 0 1.2rem; }
+      #modalNoResults,
+      #settledNoResults { margin: 1rem 1.2rem 1.5rem !important; }
+      .settled-banner { flex-direction: column; align-items: flex-start; }
+      .settled-banner-btn { width: 100%; justify-content: center; }
+      .ssc-header { flex-direction: column; align-items: stretch; }
+      .ssc-print-btn { width: 100%; justify-content: center; }
+      .student-card { flex-wrap: wrap; }
+      .ssc-history-row {
+        grid-template-columns: 26px 1fr;
+        grid-template-areas:
+          "idx date"
+          "idx amounts";
+        row-gap: 4px;
+        padding: 10px;
+      }
+      .ssc-history-row .idx { grid-area: idx; }
+      .ssc-history-row .date { grid-area: date; }
+      .ssc-history-row .prev,
+      .ssc-history-row .arrow,
+      .ssc-history-row .amt,
+      .ssc-history-row .newdue {
+        grid-area: amounts;
+        display: inline-block;
+        margin-right: 4px;
+      }
+      .topbar { padding: 1.2rem 1.4rem; }
+      .topbar h1 { font-size: 1.25rem; }
+      .topbar h1 i { width: 38px; height: 38px; font-size: 1rem; }
+      .section { padding: 1.4rem 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <h2><i class="fas fa-graduation-cap"></i> School Panel</h2>
+
+      <a href="index.html" class="nav-link">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+      <a href="student.html" class="nav-link">
+        <i class="fas fa-user-graduate"></i> Students
+      </a>
+      <a href="teacher.html" class="nav-link">
+        <i class="fas fa-chalkboard-teacher"></i> Teachers
+      </a>
+      <a href="id-card.html" class="nav-link">
+        <i class="fas fa-id-card"></i> ID Card
+      </a>
+      <a href="book-delivery-report.html" class="nav-link">
+        <i class="fas fa-book-open"></i> Book Delivery Report
+      </a>
+      <a href="admit_card.html" class="nav-link">
+        <i class="fas fa-id-card"></i> Admit Card
+      </a>
+      <a href="marksheet.html" class="nav-link">
+        <i class="fas fa-file-alt"></i> Marksheet
+      </a>
+
+      <a href="payment-history.html" class="nav-link">
+        <i class="fas fa-history"></i> Payment History
+      </a>
+
+      <a href="settle-due.html" class="nav-link active">
+        <i class="fas fa-rupee-sign"></i> Settle Due Amount
+      </a>
+
+      <a href="download.html" class="nav-link">
+        <i class="fas fa-download"></i> Download
+      </a>
+      <a href="print.html" class="nav-link">
+        <i class="fas fa-print"></i> Print Admission
+      </a>
+
+      <div class="nav-link logout-btn" id="logout-btn">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <h1><i class="fas fa-rupee-sign"></i> Settle Due Amount</h1>
+        <div id="page-welcome"><i class="fas fa-user-circle"></i> Welcome, Admin</div>
+      </div>
+
+      <section class="section">
+        <h2 class="section-title"><i class="fas fa-th-large"></i> Classes</h2>
+        <p class="txt-muted">
+          <i class="fas fa-info-circle"></i>
+          Click a class to view students who have due admission fees (class-wise). Only student names & class are shown here.
+        </p>
+
+        <div class="class-grid" id="classGrid"></div>
+
+        <div class="settled-banner">
+          <div class="settled-banner-left">
+            <div class="settled-banner-icon">
+              <i class="fas fa-circle-check"></i>
+            </div>
+            <div class="settled-banner-text">
+              <h3>Fully Settled Students</h3>
+              <p>View students who have paid their total due amount &amp; print their completion certificate.</p>
+            </div>
+          </div>
+          <button class="settled-banner-btn" id="showSettledBtn">
+            <i class="fas fa-list-check"></i> View Settled Students
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="classModal">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div style="flex:1; min-width:0;">
+          <h3 id="classModalTitle">Class X - Due Admission Fees</h3>
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:4px;">
+            <div id="classModalSub" class="txt-muted" style="margin:0;">Loading...</div>
+            <button id="showSettledClassBtn" class="btn-settled-class" style="display:none;">
+              <i class="fas fa-circle-check"></i> Settlement
+            </button>
+          </div>
+        </div>
+        <div style="flex-shrink:0;">
+          <button id="closeClassModal" class="btn btn-close">
+            <i class="fas fa-times"></i> Close
+          </button>
+        </div>
+      </div>
+
+      <div id="classModalBody">
+        <div id="dueListContainer"></div>
+
+        <div id="modalNoResults" class="txt-muted" style="display:none;">
+          <i class="fas fa-exclamation-circle"></i> No students with due admission fees found for this class.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="settledModal">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div>
+          <h3 id="settledModalTitle">
+            <i class="fas fa-circle-check" style="color:#10b981;"></i> Fully Settled Students
+          </h3>
+          <div id="settledModalSub" class="txt-muted">Loading...</div>
+        </div>
+        <div>
+          <button id="closeSettledModal" class="btn btn-close">
+            <i class="fas fa-times"></i> Close
+          </button>
+        </div>
+      </div>
+
+      <div id="settledListContainer"></div>
+
+      <div id="settledNoResults" class="txt-muted" style="display:none; justify-content:center;">
+        <i class="fas fa-exclamation-circle"></i> No fully settled students found yet.
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+  <script src="settle-due.js"></script>
+</body>
+</html>
