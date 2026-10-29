@@ -1,0 +1,1159 @@
+﻿﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Teacher Attendance Dashboard | School Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ============================================================
+           GLOBAL TOKENS + SIDEBAR TOKENS
+           ============================================================ */
+        :root{
+            --sb-width:260px;
+            --sb-bg:#1a2a6c;
+            --sb-text:#ecf0f1;
+            --sb-accent:#F5C518;
+        }
+
+        html{ -webkit-text-size-adjust:100%; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #0f0c29, #302b63, #24243e);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background glow (kept from original) */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40%;
+            left: -20%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(120, 80, 255, 0.15), transparent 70%);
+            animation: pulseGlow 8s ease-in-out infinite alternate;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -30%;
+            right: -20%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(ellipse, rgba(255, 70, 150, 0.10), transparent 70%);
+            animation: pulseGlow 10s ease-in-out infinite alternate-reverse;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes pulseGlow {
+            0%   { opacity: 0.6; transform: scale(1); }
+            100% { opacity: 1;   transform: scale(1.2); }
+        }
+
+        .hidden{ display:none !important; }
+
+        /* ============================================================
+           LOADER
+           ============================================================ */
+        .loader{
+            position:fixed;inset:0;
+            display:flex;justify-content:center;align-items:center;
+            background:rgba(15,12,41,.95);
+            z-index:9999;
+        }
+        .loader-circle{
+            width:50px;height:50px;
+            border:5px solid rgba(255,255,255,.15);
+            border-top-color:#7c5cfc;
+            border-radius:50%;
+            animation:spin 1s linear infinite;
+        }
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* ============================================================
+           APP LAYOUT (sidebar + main)
+           ============================================================ */
+        #app{
+            min-height:100vh;
+            display:flex;
+            position:relative;
+            z-index:1;
+        }
+
+        /* ============================================================
+           SIDEBAR (from student.html)
+           ============================================================ */
+        .sidebar {
+            width: var(--sb-width);
+            flex-shrink: 0;
+            background: var(--sb-bg);
+            color: var(--sb-text);
+            padding: 2rem 1rem 1rem;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sidebar::-webkit-scrollbar{ width:6px; }
+        .sidebar::-webkit-scrollbar-track{ background:transparent; }
+        .sidebar::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.15); border-radius:3px; }
+        .sidebar::-webkit-scrollbar-thumb:hover{ background:rgba(255,255,255,.3); }
+
+        .sidebar h2 {
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            text-align: center;
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .sidebar h2 i {
+            font-size: 1.6rem;
+            color: var(--sb-accent);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            color: #e5e7eb;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+        }
+        .nav-link.active {
+            background: linear-gradient(135deg, #F5C518, #f97316);
+            color: #1f2933;
+            font-weight: 600;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.25);
+        }
+        .nav-link.active i { color: #1f2933; }
+
+        .logout-btn {
+            margin-top: 2rem;
+            background: rgba(239, 68, 68, 0.15);
+            color: #fecaca;
+        }
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fee2e2;
+        }
+
+        /* ============================================================
+           MAIN AREA
+           ============================================================ */
+        .main {
+            flex: 1;
+            min-width: 0;
+            padding: 28px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        /* ============================================================
+           ATTENDANCE CARD (original design, unchanged)
+           ============================================================ */
+        .card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 28px;
+            padding: 32px 36px 36px;
+            max-width: 1360px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        /* Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .header-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #7c5cfc, #5c3dcf);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(92, 61, 207, 0.4);
+        }
+
+        .header-title h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .header-title p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        .view-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.08);
+            color: #b8aaff;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(8px);
+            letter-spacing: 0.2px;
+        }
+
+        .view-badge i { font-size: 14px; }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 16px 22px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+        }
+
+        .controls .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .controls label {
+            font-weight: 500;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.3px;
+        }
+
+        .controls input {
+            padding: 9px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+            transition: 0.25s ease;
+            outline: none;
+            min-width: 150px;
+        }
+
+        .controls input::placeholder { color: rgba(255, 255, 255, 0.25); }
+
+        .controls input:focus {
+            border-color: rgba(124, 92, 252, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(124, 92, 252, 0.08);
+        }
+
+        .controls input::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(0.7);
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.2px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c5cfc, #5c3dcf);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(92, 61, 207, 0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 32px rgba(92, 61, 207, 0.45);
+        }
+        .btn-primary:active { transform: translateY(0px); }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.07);
+            color: #c8bfff;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.13);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .btn-secondary i { color: rgba(255, 255, 255, 0.4); }
+
+        /* Stats row */
+        .stats-row {
+            display: none;
+            gap: 28px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 0 0 20px 0;
+            padding: 16px 22px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .stats-row .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stats-row .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        .dot.green {
+            background: linear-gradient(135deg, #43b581, #2d8f5a);
+            box-shadow: 0 0 12px rgba(67, 181, 129, 0.3);
+        }
+        .dot.red {
+            background: linear-gradient(135deg, #f04747, #c0392b);
+            box-shadow: 0 0 12px rgba(240, 71, 71, 0.3);
+        }
+        .stats-row .stat-number {
+            font-weight: 700;
+            color: #fff;
+            font-size: 16px;
+        }
+        .stats-row .stat-label {
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 400;
+        }
+        .stats-row .divider {
+            width: 1px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* Table wrapper */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        th, td {
+            padding: 14px 18px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            white-space: nowrap;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.03);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.4);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            backdrop-filter: blur(8px);
+        }
+
+        tr:hover td { background: rgba(255, 255, 255, 0.03); }
+
+        .daily-table td:first-child,
+        .monthly-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: #fff;
+        }
+        .daily-table th:first-child,
+        .monthly-table th:first-child { text-align: left; }
+
+        /* Monthly columns */
+        .col-present { background: rgba(67, 181, 129, 0.06) !important; }
+        .col-present th {
+            background: rgba(67, 181, 129, 0.15) !important;
+            color: #43b581;
+        }
+        .col-present td {
+            background: rgba(67, 181, 129, 0.05);
+            color: #43b581;
+        }
+        .col-absence { background: rgba(240, 71, 71, 0.06) !important; }
+        .col-absence th {
+            background: rgba(240, 71, 71, 0.15) !important;
+            color: #f04747;
+        }
+        .col-absence td {
+            background: rgba(240, 71, 71, 0.05);
+            color: #f04747;
+        }
+
+        /* Bar */
+        .bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+        }
+        .bar-track {
+            width: 120px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 20px;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .bar-fill.green {
+            background: linear-gradient(90deg, #43b581, #5cdb9a);
+            box-shadow: 0 0 16px rgba(67, 181, 129, 0.25);
+        }
+        .bar-fill.red {
+            background: linear-gradient(90deg, #f04747, #ff6b6b);
+            box-shadow: 0 0 16px rgba(240, 71, 71, 0.25);
+        }
+        .bar-label {
+            font-weight: 700;
+            font-size: 14px;
+            min-width: 28px;
+            color: #fff;
+        }
+        .bar-total {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.25);
+            font-weight: 400;
+        }
+
+        /* Empty state */
+        .empty-state {
+            padding: 56px 20px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .empty-state i {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 16px;
+            color: rgba(255, 255, 255, 0.08);
+        }
+        .empty-state strong {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 600;
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 900px) {
+            #app { flex-direction: column; }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: sticky;
+                top: 0;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.75rem 1rem;
+                max-height: none;
+                overflow: visible;
+                box-shadow: 0 4px 20px rgba(0,0,0,.25);
+            }
+            .sidebar h2 {
+                width: 100%;
+                justify-content: flex-start;
+                font-size: 1.1rem;
+                margin-bottom: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            .sidebar h2 i { font-size: 1.2rem; }
+
+            .nav-link {
+                padding: 0.45rem 0.75rem;
+                font-size: 0.8rem;
+                margin-bottom: 0;
+                border-radius: 8px;
+            }
+            .nav-link i { width: auto; font-size: 0.85rem; }
+            .logout-btn { margin-top: 0; margin-left: auto; }
+
+            .main { padding: 18px; }
+        }
+
+        @media (max-width: 820px) {
+            .card {
+                padding: 20px 18px 24px;
+                border-radius: 20px;
+            }
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 16px;
+            }
+            .controls .input-group { width: 100%; }
+            .controls input { width: 100%; min-width: unset; }
+            .btn-group { margin-left: 0; width: 100%; }
+            .btn-group .btn { flex: 1; justify-content: center; }
+            .header-title h1 { font-size: 20px; }
+            th, td { padding: 10px 12px; font-size: 12px; }
+            .bar-track { width: 60px; }
+            .stats-row { gap: 14px; padding: 14px 16px; font-size: 13px; }
+            .stats-row .divider { display: none; }
+            .view-badge { font-size: 12px; padding: 6px 14px; }
+        }
+
+        @media (max-width: 500px) {
+            .sidebar { padding: 0.6rem 0.75rem; }
+            .nav-link { padding: 0.4rem 0.65rem; font-size: 0.75rem; }
+            .nav-link i { font-size: 0.8rem; }
+
+            .main { padding: 14px; }
+
+            .bar-wrap { gap: 6px; flex-wrap: wrap; }
+            .bar-track { width: 40px; }
+            .bar-label { font-size: 12px; min-width: 20px; }
+            .bar-total { font-size: 10px; }
+        }
+
+        /* Scrollbar */
+        .table-wrap::-webkit-scrollbar { height: 6px; width: 6px; }
+        .table-wrap::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+        .table-wrap::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .table-wrap::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================
+     LOADER
+     ============================================================ -->
+<div class="loader" id="loader">
+    <div class="loader-circle"></div>
+</div>
+
+<!-- ============================================================
+     APP
+     ============================================================ -->
+<div id="app" class="hidden">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar">
+        <h2><i class="fas fa-graduation-cap"></i> School Panel</h2>
+
+        <a href="index.html" class="nav-link">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+
+       
+       
+        <a href="attendence.html" class="nav-link active">
+            <i class="fas fa-calendar-check"></i> Attendance
+        </a>
+ <a href="student-attendance-dashboard.html" class="nav-link ">
+            <i class="fas fa-calendar-check"></i> Student Attendence
+        </a>
+
+       
+
+       
+       
+        <div class="nav-link logout-btn" id="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </div>
+    </aside>
+
+    <!-- ============ MAIN ============ -->
+    <main class="main">
+
+        <div class="card">
+
+            <!-- HEADER -->
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <div class="header-icon">
+                        <i class="fas fa-chalkboard-user"></i>
+                    </div>
+                    <div class="header-title">
+                        <h1>Teacher Attendance</h1>
+                        <p>Real-time tracking &amp; monthly summaries</p>
+                    </div>
+                </div>
+                <span class="view-badge" id="viewBadge">
+                    <i class="fas fa-calendar-day"></i> Daily View
+                </span>
+            </div>
+
+            <!-- CONTROLS -->
+            <div class="controls">
+                <div class="input-group">
+                    <label for="dateInput"><i class="far fa-calendar-alt"></i></label>
+                    <input type="date" id="dateInput" />
+                </div>
+                <div class="input-group">
+                    <label for="monthInput"><i class="far fa-calendar-alt"></i></label>
+                    <input type="month" id="monthInput" />
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="dailyBtn">
+                        <i class="fas fa-calendar-day"></i> Daily
+                    </button>
+                    <button class="btn btn-secondary" id="monthlyBtn">
+                        <i class="fas fa-chart-bar"></i> Monthly
+                    </button>
+                </div>
+            </div>
+
+            <!-- STATS ROW (monthly) -->
+            <div id="statsRow" class="stats-row">
+                <div class="stat-item">
+                    <span class="dot green"></span>
+                    <span class="stat-label">Present</span>
+                    <span class="stat-number" id="statsPresent">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="dot red"></span>
+                    <span class="stat-label">Absence</span>
+                    <span class="stat-number" id="statsAbsent">0</span>
+                </div>
+                <div class="divider"></div>
+                <div class="stat-item">
+                    <i class="fas fa-users" style="color:rgba(255,255,255,0.3);"></i>
+                    <span class="stat-label">Teachers</span>
+                    <span class="stat-number" id="statsTotalTeachers">0</span>
+                </div>
+                <div class="divider"></div>
+                <div class="stat-item">
+                    <i class="fas fa-calendar-alt" style="color:rgba(255,255,255,0.3);"></i>
+                    <span class="stat-label" id="statsMonthLabel">—</span>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-wrap">
+                <table id="attendanceTable">
+                    <thead id="tableHead">
+                        <tr>
+                            <th>Teacher Name</th>
+                            <th>Date</th>
+                            <th>Entry Time</th>
+                            <th>Exit Time</th>
+                            <th>Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
+<script>
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  LOADER → REVEAL APP
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    window.addEventListener('load', function () {
+        setTimeout(function () {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('app').classList.remove('hidden');
+        }, 500);
+    });
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  CONFIG
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    const firebaseConfig = {
+        apiKey: "AIzaSyCOzfdIXBeh6drFhml4pOFEvPG8xV_Wjzw",
+        authDomain: "school-management-projec-9db7a.firebaseapp.com",
+        projectId: "school-management-projec-9db7a",
+        storageBucket: "school-management-projec-9db7a.firebasestorage.app",
+        messagingSenderId: "975842483778",
+        appId: "1:975842483778:web:d1708792ff56014f3317db"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let schoolId = null;
+    const tbody = document.getElementById("tbody");
+    const thead = document.getElementById("tableHead");
+    const table = document.getElementById("attendanceTable");
+    const statsRow = document.getElementById("statsRow");
+    const viewBadge = document.getElementById("viewBadge");
+    const statsTotalTeachers = document.getElementById("statsTotalTeachers");
+    const statsMonthLabel = document.getElementById("statsMonthLabel");
+    const statsPresent = document.getElementById("statsPresent");
+    const statsAbsent = document.getElementById("statsAbsent");
+
+    let currentView = 'daily';
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  LOGOUT (matches student.html behavior)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    document.getElementById('logout-btn').addEventListener('click', function () {
+        if (confirm('Are you sure you want to logout?')) {
+            if (window.firebase && firebase.auth) {
+                firebase.auth().signOut().then(() => {
+                    window.location.href = 'login.html';
+                }).catch(() => {
+                    window.location.href = 'login.html';
+                });
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+    });
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  AUTH
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+            alert("Please login as admin");
+            return;
+        }
+
+        try {
+            const snap = await db.collection("user").where("uid", "==", user.uid).get();
+            if (snap.empty) {
+                alert("Admin profile not found");
+                return;
+            }
+            const data = snap.docs[0].data();
+            if (data.role !== "admins") {
+                alert("Admins only");
+                return;
+            }
+            schoolId = data.schoolId;
+        } catch (err) {
+            console.error("Auth error:", err);
+            alert("Error verifying admin");
+        }
+    });
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  HELPERS
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    function clearTable() {
+        tbody.innerHTML = "";
+    }
+
+    function formatTime(timestamp) {
+        if (!timestamp) return "-";
+        try {
+            let date;
+            if (typeof timestamp.toDate === "function") {
+                date = timestamp.toDate();
+            } else if (timestamp.seconds) {
+                date = new Date(timestamp.seconds * 1000 + Math.floor((timestamp.nanoseconds || 0) / 1000000));
+            } else {
+                date = new Date(timestamp);
+            }
+            if (isNaN(date.getTime())) return "-";
+            return date.toLocaleTimeString("en-IN", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true
+            });
+        } catch {
+            return "-";
+        }
+    }
+
+    function calcHours(entry, exit) {
+        if (!entry || !exit) return "-";
+        try {
+            let entryDate, exitDate;
+            if (typeof entry.toDate === "function") entryDate = entry.toDate();
+            else if (entry.seconds) entryDate = new Date(entry.seconds * 1000);
+            else entryDate = new Date(entry);
+
+            if (typeof exit.toDate === "function") exitDate = exit.toDate();
+            else if (exit.seconds) exitDate = new Date(exit.seconds * 1000);
+            else exitDate = new Date(exit);
+
+            const diff = exitDate.getTime() - entryDate.getTime();
+            if (diff < 0 || isNaN(diff)) return "-";
+            return (diff / 3600000).toFixed(2);
+        } catch {
+            return "-";
+        }
+    }
+
+    function formatMonthLabel(year, month) {
+        const d = new Date(year, month - 1, 1);
+        return d.toLocaleString("en-US", { month: "long", year: "numeric" });
+    }
+
+    function getWeekdaysInMonth(year, month) {
+        const days = new Date(year, month, 0).getDate();
+        let count = 0;
+        for (let d = 1; d <= days; d++) {
+            const dow = new Date(year, month - 1, d).getDay();
+            if (dow >= 1 && dow <= 5) count++;
+        }
+        return count;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  DAILY VIEW
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    function setDailyHeaders() {
+        thead.innerHTML = `
+            <tr>
+                <th><i class="fas fa-user-graduate" style="margin-right:6px;opacity:0.5;"></i>Teacher</th>
+                <th><i class="fas fa-calendar-day" style="margin-right:6px;opacity:0.5;"></i>Date</th>
+                <th><i class="fas fa-sign-in-alt" style="margin-right:6px;opacity:0.5;"></i>Entry</th>
+                <th><i class="fas fa-sign-out-alt" style="margin-right:6px;opacity:0.5;"></i>Exit</th>
+                <th><i class="fas fa-clock" style="margin-right:6px;opacity:0.5;"></i>Hours</th>
+            </tr>
+        `;
+        table.className = 'daily-table';
+        statsRow.style.display = 'none';
+        viewBadge.innerHTML = '<i class="fas fa-calendar-day"></i> Daily View';
+        currentView = 'daily';
+    }
+
+    function addDailyRow(data) {
+        const tr = document.createElement("tr");
+        const entry = formatTime(data.entryTime);
+        const exit = formatTime(data.exitTime);
+        const hours = calcHours(data.entryTime, data.exitTime);
+        tr.innerHTML = `
+            <td>${data.teacherName || data.teacherId || "-"}</td>
+            <td>${data.date || "-"}</td>
+            <td>${entry}</td>
+            <td>${exit}</td>
+            <td>${hours}</td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    async function loadDaily() {
+        const date = document.getElementById("dateInput").value;
+        if (!date) return alert("Select a date");
+        if (!schoolId) return alert("School not loaded");
+
+        clearTable();
+        setDailyHeaders();
+
+        try {
+            const snap = await db
+                .collection("attendance")
+                .doc(schoolId)
+                .collection(date)
+                .get();
+
+            if (snap.empty) {
+                tbody.innerHTML =
+                    `<tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i>No attendance records for <strong>${date}</strong></td></tr>`;
+                return;
+            }
+
+            snap.forEach(doc => addDailyRow(doc.data()));
+        } catch (err) {
+            console.error("Daily load error:", err);
+            alert("Error loading daily data");
+        }
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  MONTHLY VIEW
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    function setMonthlyHeaders() {
+        thead.innerHTML = `
+            <tr>
+                <th style="text-align:left;"><i class="fas fa-user-graduate" style="margin-right:6px;opacity:0.5;"></i>Teacher</th>
+                <th><i class="fas fa-calendar-alt" style="margin-right:6px;opacity:0.5;"></i>Month</th>
+                <th class="col-present"><i class="fas fa-check-circle" style="margin-right:6px;"></i>Present</th>
+                <th class="col-absence"><i class="fas fa-times-circle" style="margin-right:6px;"></i>Absence</th>
+            </tr>
+        `;
+        table.className = 'monthly-table';
+        statsRow.style.display = 'flex';
+        viewBadge.innerHTML = '<i class="fas fa-chart-bar"></i> Monthly Summary';
+        currentView = 'monthly';
+    }
+
+    function addMonthlyRow(teacherName, monthLabel, presentCount, totalDays) {
+        const tr = document.createElement("tr");
+        const absentCount = Math.max(0, totalDays - presentCount);
+
+        const pctPresent = totalDays > 0 ? Math.min(100, (presentCount / totalDays) * 100) : 0;
+        const pctAbsent = totalDays > 0 ? Math.min(100, (absentCount / totalDays) * 100) : 0;
+
+        tr.innerHTML = `
+            <td style="text-align:left;font-weight:600;">${teacherName}</td>
+            <td>${monthLabel}</td>
+            <td class="col-present">
+                <div class="bar-wrap">
+                    <span class="bar-label">${presentCount}</span>
+                    <div class="bar-track">
+                        <div class="bar-fill green" style="width:${pctPresent}%;"></div>
+                    </div>
+                    <span class="bar-total">/ ${totalDays}</span>
+                </div>
+            </td>
+            <td class="col-absence">
+                <div class="bar-wrap">
+                    <span class="bar-label">${absentCount}</span>
+                    <div class="bar-track">
+                        <div class="bar-fill red" style="width:${pctAbsent}%;"></div>
+                    </div>
+                    <span class="bar-total">/ ${totalDays}</span>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    async function loadMonthly() {
+        const monthVal = document.getElementById("monthInput").value;
+        if (!monthVal) return alert("Select a month");
+        if (!schoolId) return alert("School not loaded");
+
+        clearTable();
+        setMonthlyHeaders();
+
+        const [year, month] = monthVal.split("-").map(Number);
+        const monthLabel = formatMonthLabel(year, month);
+        const totalWeekdays = getWeekdaysInMonth(year, month);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const monthPad = String(month).padStart(2, '0');
+
+        statsMonthLabel.textContent = monthLabel;
+
+        try {
+            const allRecords = [];
+            const fetches = [];
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${monthPad}-${String(d).padStart(2, '0')}`;
+                fetches.push(
+                    db
+                        .collection("attendance")
+                        .doc(schoolId)
+                        .collection(dateStr)
+                        .get()
+                        .then(snap => {
+                            snap.forEach(doc => allRecords.push(doc.data()));
+                        })
+                        .catch(err => {
+                            console.warn(`Skipping ${dateStr}:`, err.code || err.message);
+                        })
+                );
+            }
+
+            await Promise.all(fetches);
+
+            if (allRecords.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="4" class="empty-state"><i class="fas fa-inbox"></i>No records for <strong>${monthLabel}</strong></td></tr>`;
+                statsTotalTeachers.textContent = '0';
+                statsPresent.textContent = '0';
+                statsAbsent.textContent = '0';
+                return;
+            }
+
+            const teacherMap = new Map();
+            for (const rec of allRecords) {
+                const displayName = rec.teacherName || rec.teacherId || 'unknown';
+                const key = rec.teacherId || rec.teacherName || 'unknown';
+
+                if (!teacherMap.has(key)) {
+                    teacherMap.set(key, {
+                        name: displayName,
+                        presentDays: 0,
+                    });
+                }
+
+                if (rec.entryTime) {
+                    teacherMap.get(key).presentDays += 1;
+                }
+            }
+
+            let totalPresentAll = 0;
+            let teacherCount = 0;
+
+            for (const [, data] of teacherMap) {
+                const present = data.presentDays;
+                totalPresentAll += present;
+                addMonthlyRow(data.name, monthLabel, present, totalWeekdays);
+                teacherCount++;
+            }
+
+            const totalAbsentAll = Math.max(0, (teacherCount * totalWeekdays) - totalPresentAll);
+
+            statsTotalTeachers.textContent = teacherCount;
+            statsPresent.textContent = totalPresentAll;
+            statsAbsent.textContent = totalAbsentAll;
+
+        } catch (err) {
+            console.error("Monthly load error:", err);
+            alert("Error loading monthly data");
+        }
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  EVENT BINDING
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    document.getElementById("dailyBtn").onclick = loadDaily;
+    document.getElementById("monthlyBtn").onclick = loadMonthly;
+
+    // Set defaults
+    (function setDefaults() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        document.getElementById("dateInput").value = `${y}-${m}-${d}`;
+        document.getElementById("monthInput").value = `${y}-${m}`;
+    })();
+
+    // Auto-load
+    let authReady = false;
+    auth.onAuthStateChanged(() => {
+        if (!authReady) {
+            authReady = true;
+            setTimeout(loadDaily, 600);
+        }
+    });
+
+    console.log("✨ Modern Teacher Attendance Dashboard loaded with sidebar.");
+</script>
+
+</body>
+</html>

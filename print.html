@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Print Admission | School Management System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1A2A6C, #B21F1F, #1A2A6C);
+      min-height: 100vh;
+    }
+
+    #app {
+      min-height: 100vh;
+      display: flex;
+      backdrop-filter: blur(10px);
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: 260px;
+      background: rgba(255,255,255,0.95);
+      padding: 2rem 1rem;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+    }
+
+    .sidebar h2 {
+      margin-bottom: 2rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+      text-decoration: none;
+      color: #555;
+      gap: 10px;
+      font-size: 0.95rem;
+    }
+
+    .nav-link i {
+      color: #1A2A6C;
+      width: 20px;
+      text-align: center;
+    }
+
+    .nav-link.active,
+    .nav-link:hover {
+      background: rgba(26,42,108,0.08);
+      color: #1A2A6C;
+      font-weight: 600;
+    }
+
+    .logout-btn {
+      margin-top: 2rem;
+      color: #B21F1F;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ===== MAIN ===== */
+    .main {
+      flex: 1;
+      padding: 2rem;
+      overflow-x: auto;
+    }
+
+    /* ===== TOPBAR ===== */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.95);
+      padding: 1.5rem 2rem;
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    .topbar h1 {
+      font-size: 1.6rem;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* ===== CARDS GRID ===== */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: rgba(255,255,255,0.95);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .card h2 {
+      margin-bottom: 0.6rem;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 1.2rem;
+      color: #1A2A6C;
+    }
+
+    .card .card-desc {
+      font-size: 0.85rem;
+      color: #777;
+      margin-bottom: 1.2rem;
+      line-height: 1.5;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .form-row.col { flex-direction: column; }
+
+    .form-row label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, select {
+      flex: 1;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    input:focus, select:focus { border-color: #1A2A6C; }
+
+    button {
+      padding: 0.8rem 1.2rem;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #1A2A6C, #B21F1F);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: transform .15s, box-shadow .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(26,42,108,0.3);
+    }
+
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    button.full { width: 100%; }
+    button.green { background: linear-gradient(135deg, #0d6e54, #16a34a); }
+
+    /* ===== STUDENT LIST SECTION ===== */
+    .list-section {
+      background: rgba(255,255,255,0.95);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .list-section h2 {
+      margin-bottom: 0.6rem;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 1.2rem;
+      color: #1A2A6C;
+    }
+
+    .list-section .card-desc {
+      font-size: 0.85rem;
+      color: #777;
+      margin-bottom: 1.2rem;
+      line-height: 1.5;
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      margin-bottom: 1.2rem;
+      align-items: end;
+    }
+
+    @media (max-width: 768px) {
+      .filter-row { grid-template-columns: 1fr; }
+    }
+
+    .filter-item label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-item select {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+      background: #fff;
+      outline: none;
+    }
+
+    .filter-item select:focus { border-color: #1A2A6C; }
+
+    .student-list-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .student-list-table thead {
+      background: linear-gradient(135deg, #1A2A6C, #2c3e91);
+      color: white;
+    }
+
+    .student-list-table th {
+      padding: 12px 10px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .student-list-table th.center { text-align: center; }
+
+    .student-list-table td {
+      padding: 10px;
+      border-bottom: 1px solid #eef2f7;
+      font-size: 0.85rem;
+      color: #333;
+      vertical-align: middle;
+    }
+
+    .student-list-table tbody tr:nth-child(even) { background: #f9fafb; }
+    .student-list-table tbody tr:hover { background: #eef2ff; }
+    .student-list-table td.center { text-align: center; }
+
+    .student-list-table .empty-row td {
+      text-align: center;
+      padding: 30px;
+      color: #888;
+      font-style: italic;
+    }
+
+    .detail-btn {
+      background: linear-gradient(135deg, #1A2A6C, #2c3e91);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: transform .15s, box-shadow .15s;
+    }
+
+    .detail-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(26,42,108,0.3);
+    }
+
+    .detail-btn i { font-size: 0.7rem; }
+
+    .list-info-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 4px;
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #666;
+      border-top: 1px solid #eef2f7;
+    }
+
+    .list-info-bar .count {
+      font-weight: 700;
+      color: #1A2A6C;
+    }
+
+    #result { margin-top: 1rem; font-size: 0.9rem; color: #333; }
+
+    .status-msg {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin-top: 12px;
+      display: none;
+    }
+    .status-msg.show { display: block; }
+    .status-msg.info { background: #eef2ff; color: #1A2A6C; border-left: 3px solid #1A2A6C; }
+    .status-msg.success { background: #ecfdf5; color: #065f46; border-left: 3px solid #16a34a; }
+    .status-msg.error { background: #fef2f2; color: #991b1b; border-left: 3px solid #B21F1F; }
+
+    @media (max-width: 768px) {
+      #app { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        display: flex;
+        overflow-x: auto;
+        padding: 1rem;
+      }
+      .sidebar h2 { display: none; }
+      .nav-link { white-space: nowrap; margin-right: 0.5rem; margin-bottom: 0; }
+      .logout-btn { margin-top: 0; }
+      .main { padding: 1rem; }
+      .topbar { padding: 1rem; flex-direction: column; gap: 8px; align-items: flex-start; }
+      .topbar h1 { font-size: 1.2rem; }
+      .card, .list-section { padding: 1.2rem; }
+      .student-list-table { font-size: 0.75rem; }
+      .student-list-table th, .student-list-table td { padding: 8px 6px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2><i class="fas fa-graduation-cap"></i> School Panel</h2>
+
+    <a href="index.html" class="nav-link">
+      <i class="fas fa-tachometer-alt"></i> Dashboard
+    </a>
+
+    <a href="student.html" class="nav-link">
+      <i class="fas fa-user-graduate"></i> Students
+    </a>
+
+    <a href="teacher.html" class="nav-link">
+      <i class="fas fa-chalkboard-teacher"></i> Teachers
+    </a>
+
+    <a href="id-card.html" class="nav-link">
+      <i class="fas fa-id-card"></i> ID Card
+    </a>
+
+    <a href="book-delivery-report.html" class="nav-link">
+      <i class="fas fa-book-open"></i> Book Delivery Report
+    </a>
+    <a href="admit_card.html" class="nav-link">
+      <i class="fas fa-id-card"></i> Admit Card
+    </a>
+    <a href="marksheet.html" class="nav-link">
+      <i class="fas fa-file-alt"></i> Marksheet
+    </a>
+
+    <a href="payment-history.html" class="nav-link">
+      <i class="fas fa-history"></i> Payment History
+    </a>
+    <a href="settle-due.html" class="nav-link">
+      <i class="fas fa-rupee-sign"></i> Settle Due Amount
+    </a>
+
+    <a href="download.html" class="nav-link">
+      <i class="fas fa-download"></i> Download
+    </a>
+    <a href="print.html" class="nav-link active">
+      <i class="fas fa-print"></i> Print Admission
+    </a>
+
+    <a href="edit.html" class="nav-link">
+      <i class="fas fa-pen-to-square"></i> Edit Student
+    </a>
+    <div class="nav-link logout-btn" id="logout-btn">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <h1><i class="fas fa-print"></i> Print Admission</h1>
+      <span id="page-welcome">Welcome</span>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- CARD 1: Find Student by Mobile -->
+      <div class="card">
+        <h2><i class="fas fa-user"></i> Find Student</h2>
+        <p class="card-desc">Enter student mobile number to print a single admission slip.</p>
+
+        <div class="form-row">
+          <input type="text" id="mobile" placeholder="Enter student mobile number">
+        </div>
+        <div class="form-row">
+          <button id="searchPrintBtn" class="full">
+            <i class="fas fa-print"></i> Print Admission Slip
+          </button>
+        </div>
+
+        <div id="result"></div>
+      </div>
+
+      <!-- CARD 2: Print Bulk Student Details -->
+      <div class="card">
+        <h2><i class="fas fa-list-ul"></i> Print Student List</h2>
+        <p class="card-desc">Filter by session and class to print a full student details report as a beautiful PDF.</p>
+
+        <div class="form-row col">
+          <label for="sessionFilter">Session / Academic Year</label>
+          <select id="sessionFilter">
+            <option value="">All Sessions</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+            <option value="2029">2029</option>
+            <option value="2030">2030</option>
+            <option value="2031">2031</option>
+            <option value="2032">2032</option>
+            <option value="2033">2033</option>
+            <option value="2034">2034</option>
+            <option value="2035">2035</option>
+            <option value="2036">2036</option>
+            <option value="2037">2037</option>
+            <option value="2038">2038</option>
+            <option value="2039">2039</option>
+            <option value="2040">2040</option>
+          </select>
+        </div>
+
+        <div class="form-row col">
+          <label for="classFilter">Class</label>
+          <select id="classFilter">
+            <option value="">All Classes</option>
+            <option value="PREPRIMARY">Pre-Primary</option>
+            <option value="NURSERY">Nursery</option>
+            <option value="LKG">LKG</option>
+            <option value="UKG">UKG</option>
+            <option value="1">Class 1</option>
+            <option value="2">Class 2</option>
+            <option value="3">Class 3</option>
+            <option value="4">Class 4</option>
+            <option value="5">Class 5</option>
+            <option value="6">Class 6</option>
+            <option value="7">Class 7</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+            <option value="11">Class 11</option>
+            <option value="12">Class 12</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <button id="printListBtn" class="full green">
+            <i class="fas fa-file-pdf"></i> Print Student List
+          </button>
+        </div>
+
+        <div id="listStatus" class="status-msg"></div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================
+         NEW SECTION: Student List with Show Details
+         ============================================================ -->
+    <div class="list-section">
+      <h2><i class="fas fa-address-book"></i> Student Directory &amp; Details</h2>
+      <p class="card-desc">Filter by session and class, then click <b>Show Details</b> on any student to open a beautiful profile PDF with a print option.</p>
+
+      <div class="filter-row">
+        <div class="filter-item">
+          <label for="dirSession">Session / Academic Year</label>
+          <select id="dirSession">
+            <option value="">All Sessions</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+            <option value="2029">2029</option>
+            <option value="2030">2030</option>
+            <option value="2031">2031</option>
+            <option value="2032">2032</option>
+            <option value="2033">2033</option>
+            <option value="2034">2034</option>
+            <option value="2035">2035</option>
+            <option value="2036">2036</option>
+            <option value="2037">2037</option>
+            <option value="2038">2038</option>
+            <option value="2039">2039</option>
+            <option value="2040">2040</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="dirClass">Class</label>
+          <select id="dirClass">
+            <option value="">All Classes</option>
+            <option value="PREPRIMARY">Pre-Primary</option>
+            <option value="NURSERY">Nursery</option>
+            <option value="LKG">LKG</option>
+            <option value="UKG">UKG</option>
+            <option value="1">Class 1</option>
+            <option value="2">Class 2</option>
+            <option value="3">Class 3</option>
+            <option value="4">Class 4</option>
+            <option value="5">Class 5</option>
+            <option value="6">Class 6</option>
+            <option value="7">Class 7</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+            <option value="11">Class 11</option>
+            <option value="12">Class 12</option>
+          </select>
+        </div>
+
+        <button id="loadDirectoryBtn">
+          <i class="fas fa-search"></i> Load Students
+        </button>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="student-list-table" id="directoryTable">
+          <thead>
+            <tr>
+              <th class="center" style="width:40px;">#</th>
+              <th>Name</th>
+              <th>Father's Name</th>
+              <th class="center">Class</th>
+              <th class="center">Roll</th>
+              <th class="center">Session</th>
+              <th class="center" style="width:130px;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="directoryBody">
+            <tr class="empty-row">
+              <td colspan="7">
+                <i class="fas fa-inbox" style="font-size:22px;display:block;margin-bottom:6px;opacity:0.5;"></i>
+                Select filters and click <b>Load Students</b>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="list-info-bar" id="directoryInfoBar" style="display:none;">
+        <span>Showing <span class="count" id="dirCount">0</span> student(s)</span>
+        <span id="dirFilterLabel" style="opacity:0.7;"></span>
+      </div>
+
+      <div id="directoryStatus" class="status-msg"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<script src="print.js"></script>
+</body>
+</html>

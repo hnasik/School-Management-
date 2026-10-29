@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bulk Promote Students | School Management System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before {
+      content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: url("https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?q=80&w=870&auto=format&fit=crop") center/cover;
+      opacity: 0.1; z-index: -1;
+    }
+
+    .hidden { display: none !important; }
+
+    #app { min-height: 100vh; display: flex; backdrop-filter: blur(5px); }
+
+    /* Sidebar matching existing system */
+    .sidebar {
+      width: 260px; background: linear-gradient(180deg, #4a148c, #7b1fa2, #9c27b0);
+      color: #ecf0f1; padding: 2rem 1rem; box-shadow: 3px 0 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease; flex-shrink: 0; overflow-y: auto;
+    }
+    .sidebar h2 { margin-bottom: 2rem; font-size: 1.5rem; text-align: center; color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .sidebar h2 i { font-size: 1.8rem; color: #e1bee7; }
+    .nav-link { display: flex; align-items: center; padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer; font-size: 1rem; text-decoration: none; color: #ecf0f1; transition: all 0.3s ease; gap: 10px; }
+    .nav-link i { width: 20px; text-align: center; }
+    .nav-link.active, .nav-link:hover { background: rgba(255, 255, 255, 0.15); transform: translateX(5px); }
+    .nav-link.active { background: rgba(255, 255, 255, 0.25); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+    .logout-btn { margin-top: 2rem; background: #d32f2f; text-align: center; }
+    .logout-btn:hover { background: #b71c1c; }
+
+    /* Main Content */
+    .main { flex: 1; padding: 2rem; overflow-y: auto; }
+    
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: rgba(255, 255, 255, 0.95); padding: 1.5rem 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); }
+    .topbar h1 { font-size: 1.8rem; color: #4a148c; display: flex; align-items: center; gap: 15px; }
+    .topbar h1 i { color: #9c27b0; font-size: 2rem; }
+
+    .section { background: rgba(255, 255, 255, 0.95); padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); margin-bottom: 1.5rem; }
+
+    /* Warning Banner */
+    .warning-banner {
+      background: #fff3cd; border-left: 6px solid #ffc107; color: #856404;
+      padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem;
+      display: flex; align-items: center; gap: 15px; font-weight: 500;
+    }
+    .warning-banner i { font-size: 1.5rem; color: #dc3545; }
+
+    /* Promotion Controls */
+    .promo-grid { 
+      display: grid; 
+      grid-template-columns: 1fr auto 1fr auto 1fr; 
+      gap: 1rem; 
+      align-items: center; 
+      background: #f8f4ff; 
+      padding: 2rem; 
+      border-radius: 16px; 
+      border: 2px dashed #d1c4e9; 
+    }
+    .promo-box { display: flex; flex-direction: column; gap: 0.5rem; }
+    .promo-box label { font-weight: 600; color: #4a148c; font-size: 1rem; }
+    .promo-box select { 
+      padding: 0.9rem; 
+      border-radius: 12px; 
+      border: 2px solid #ce93d8; 
+      font-size: 1rem; 
+      font-weight: 600; 
+      color: #4a148c; 
+      outline: none; 
+      cursor: pointer; 
+      background: #fff; 
+      transition: 0.2s; 
+      appearance: none; 
+    }
+    .promo-box select:focus { border-color: #9c27b0; box-shadow: 0 0 0 4px rgba(156, 39, 176, 0.2); }
+    
+    .arrow-icon { font-size: 1.5rem; color: #9c27b0; animation: pulse 2s infinite; }
+
+    /* Preview Table */
+    .preview-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.95rem; }
+    .preview-table th, .preview-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #eee; }
+    .preview-table th { background: #4a148c; color: white; position: sticky; top: 0; }
+    .preview-table tbody tr:hover { background: #fcf8ff; }
+    
+    .badge { padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600; background: #e1bee7; color: #4a148c; }
+    .badge-year { background: #c8e6c9; color: #1b5e20; }
+
+    /* Action Buttons */
+    .btn-promote {
+      width: 100%; padding: 1.2rem; margin-top: 2rem; border: none; border-radius: 12px;
+      background: linear-gradient(135deg, #9c27b0, #6a1b9a); color: white;
+      font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s;
+      display: flex; justify-content: center; align-items: center; gap: 10px;
+      box-shadow: 0 8px 20px rgba(156, 39, 176, 0.4);
+    }
+    .btn-promote:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(156, 39, 176, 0.5); }
+    .btn-promote:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* Custom Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 100; }
+    .modal-box { background: white; padding: 2.5rem; border-radius: 20px; max-width: 550px; width: 90%; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+    .modal-box i.warning { font-size: 4rem; color: #ff9800; margin-bottom: 1rem; }
+    .modal-box h3 { color: #4a148c; font-size: 1.5rem; margin-bottom: 1rem; }
+    .modal-box p { color: #666; font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem; }
+    .modal-actions { display: flex; gap: 1rem; justify-content: center; }
+    .btn-cancel { padding: 0.8rem 1.5rem; border-radius: 8px; border: none; background: #e0e0e0; color: #333; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-cancel:hover { background: #ccc; }
+    .btn-confirm { padding: 0.8rem 1.5rem; border-radius: 8px; border: none; background: #4caf50; color: white; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+    .btn-confirm:hover { background: #388e3c; }
+
+    /* Progress Bar */
+    .progress-wrap { width: 100%; background: #eee; border-radius: 50px; margin-top: 1rem; overflow: hidden; height: 12px; display: none; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #9c27b0, #4caf50); width: 0%; transition: width 0.3s ease; }
+
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+    @media (max-width: 900px) {
+      #app { flex-direction: column; }
+      .sidebar { width: 100%; display: flex; overflow-x: auto; padding: 1rem; }
+      .sidebar h2 { display: none; }
+      .nav-link { margin-right: 0.5rem; white-space: nowrap; margin-bottom: 0; }
+      .logout-btn { margin-top: 0; margin-left: auto; }
+      .promo-grid { grid-template-columns: 1fr; text-align: center; }
+      .arrow-icon { transform: rotate(90deg); margin: 0.5rem 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2><i class="fas fa-graduation-cap"></i> School Panel</h2>
+    <a href="index.html" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <a href="student.html" class="nav-link"><i class="fas fa-user-graduate"></i> Students</a>
+    <a href="teacher.html" class="nav-link"><i class="fas fa-chalkboard-teacher"></i> Teachers</a>
+    <a href="id-card.html" class="nav-link"><i class="fas fa-id-card"></i> ID Card</a>
+    <a href="book-delivery-report.html" class="nav-link"><i class="fas fa-book-open"></i> Book Delivery Report</a>
+    <a href="admit_card.html" class="nav-link"><i class="fas fa-id-card"></i> Admit Card</a>
+    <a href="marksheet.html" class="nav-link"><i class="fas fa-file-alt"></i> Marksheet</a>
+    <a href="payment-history.html" class="nav-link"><i class="fas fa-history"></i> Payment History</a>
+    <a href="settle-due.html" class="nav-link"><i class="fas fa-rupee-sign"></i> Settle Due Amount</a>
+    <a href="download.html" class="nav-link"><i class="fas fa-download"></i> Download</a>
+    <a href="print.html" class="nav-link"><i class="fas fa-print"></i> Print Admission</a>
+    <a href="edit.html" class="nav-link"><i class="fas fa-pen-to-square"></i> Edit Student</a>
+    
+    <!-- NEW PAGE ACTIVE -->
+    <a href="bulk-promote.html" class="nav-link active"><i class="fas fa-level-up-alt"></i> Bulk Promote</a>
+    
+    <div class="nav-link logout-btn" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <div class="topbar">
+      <h1><i class="fas fa-level-up-alt"></i> Bulk Promotion</h1>
+      <span style="font-size:0.95rem; color:#6a1b9a; font-weight:500;">Move entire classes to the next grade instantly.</span>
+    </div>
+
+    <div class="warning-banner">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div>
+        <strong>Important:</strong> This action will update the Class and Academic Year of all selected students. It is highly recommended to take a backup before promoting. This action cannot be undone automatically.
+      </div>
+    </div>
+
+    <section class="section">
+      
+      <!-- 3-Column Grid for Source, Target Class, and Target Year -->
+      <div class="promo-grid">
+        <div class="promo-box">
+          <label for="sourceClass">Current Class (Promote From)</label>
+          <select id="sourceClass">
+            <option value="">-- Select Class --</option>
+            <option value="PREPRIMARY">PREPRIMARY</option>
+            <option value="NURSERY">NURSERY</option>
+            <option value="LKG">LKG</option>
+            <option value="UKG">UKG</option>
+            <option value="1">Class 1</option>
+            <option value="2">Class 2</option>
+            <option value="3">Class 3</option>
+            <option value="4">Class 4</option>
+            <option value="5">Class 5</option>
+            <option value="6">Class 6</option>
+            <option value="7">Class 7</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+            <option value="11">Class 11</option>
+          </select>
+        </div>
+
+        <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+
+        <div class="promo-box">
+          <label for="targetClass">Next Class (Promote To)</label>
+          <select id="targetClass">
+            <option value="">-- Select Class --</option>
+            <option value="NURSERY">NURSERY</option>
+            <option value="LKG">LKG</option>
+            <option value="UKG">UKG</option>
+            <option value="1">Class 1</option>
+            <option value="2">Class 2</option>
+            <option value="3">Class 3</option>
+            <option value="4">Class 4</option>
+            <option value="5">Class 5</option>
+            <option value="6">Class 6</option>
+            <option value="7">Class 7</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+            <option value="11">Class 11</option>
+            <option value="12">Class 12</option>
+          </select>
+        </div>
+
+        <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+
+        <div class="promo-box">
+          <label for="targetYear">Target Academic Year</label>
+          <select id="targetYear">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Preview Area -->
+      <div id="previewArea" class="hidden" style="margin-top: 2rem;">
+        <h3 style="color: #4a148c; margin-bottom: 1rem; border-bottom: 2px solid #eee; padding-bottom: 0.5rem;">
+          Preview: <span id="previewCount" style="color: #9c27b0;">0</span> Students Found
+        </h3>
+        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 12px;">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student Name</th>
+                <th>Roll No</th>
+                <th>Current Class</th>
+                <th>Current Year</th>
+              </tr>
+            </thead>
+            <tbody id="previewBody">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+        
+        <button id="promoteBtn" class="btn-promote">
+          <i class="fas fa-level-up-alt"></i> Promote All Students
+        </button>
+        
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+      
+      <div id="emptyState" style="text-align: center; color: #888; margin-top: 2rem;">
+        <i class="fas fa-arrow-up" style="font-size: 3rem; color: #d1c4e9; margin-bottom: 1rem;"></i>
+        <p>Select a Current Class above to preview students.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div id="confirmModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <i class="fas fa-exclamation-circle warning"></i>
+    <h3>Are you absolutely sure?</h3>
+    <p>
+      You are about to move <strong><span id="modalCount">0</span> students</strong> from 
+      <strong>Class <span id="modalSource"></span></strong> to 
+      <strong>Class <span id="modalTarget"></span></strong>.
+      <br><br>
+      Their Academic Year will also be updated to <strong><span id="modalTargetYear"></span></strong>.
+      <br><br>
+      All other data (fees, marks, address) will remain intact.
+    </p>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelModalBtn">Cancel</button>
+      <button class="btn-confirm" id="confirmModalBtn">
+        <i class="fas fa-check"></i> Yes, Promote Now
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
+<script>
+  // --- Firebase Config ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOzfdIXBeh6drFhml4pOFEvPG8xV_Wjzw",
+    authDomain: "school-management-projec-9db7a.firebaseapp.com",
+    projectId: "school-management-projec-9db7a",
+    storageBucket: "school-management-projec-9db7a.firebasestorage.app",
+    messagingSenderId: "975842483778",
+    appId: "1:975842483778:web:d1708792ff56014f3317db"
+  };
+
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // --- State ---
+  let currentUser = null;
+  let studentsToPromote = [];
+
+  // --- DOM Elements ---
+  const sourceSelect = document.getElementById('sourceClass');
+  const targetSelect = document.getElementById('targetClass');
+  const targetYearSelect = document.getElementById('targetYear');
+  const previewArea = document.getElementById('previewArea');
+  const emptyState = document.getElementById('emptyState');
+  const previewBody = document.getElementById('previewBody');
+  const previewCount = document.getElementById('previewCount');
+  const promoteBtn = document.getElementById('promoteBtn');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressBar = document.getElementById('progressBar');
+  const confirmModal = document.getElementById('confirmModal');
+
+  // --- Populate Target Year Dropdown (2026–2040) ---
+  (function populateYears() {
+    const startYear = 2026;
+    const endYear = 2040;
+    const currentYear = new Date().getFullYear();
+    let defaultSet = false;
+
+    for (let y = startYear; y <= endYear; y++) {
+      const opt = document.createElement('option');
+      opt.value = String(y);
+      opt.textContent = y;
+      
+      // Auto-select next year by default
+      if (y === currentYear + 1) {
+        opt.selected = true;
+        defaultSet = true;
+      }
+      targetYearSelect.appendChild(opt);
+    }
+    
+    if (!defaultSet && targetYearSelect.options.length > 0) {
+      targetYearSelect.selectedIndex = 0;
+    }
+  })();
+
+  // --- Auth ---
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+    currentUser = user;
+  });
+
+  // --- Fetch Preview ---
+  sourceSelect.addEventListener('change', async (e) => {
+    const sourceClass = e.target.value;
+    
+    if (!sourceClass) {
+      previewArea.classList.add('hidden');
+      emptyState.classList.remove('hidden');
+      return;
+    }
+
+    // Reset UI
+    emptyState.classList.add('hidden');
+    previewArea.classList.remove('hidden');
+    previewBody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Fetching students...</td></tr>';
+    studentsToPromote = [];
+
+    try {
+      // Query students matching current class
+      const snap = await db.collection('students')
+        .where('ownerId', '==', currentUser.uid)
+        .where('studentClass', '==', sourceClass)
+        .get();
+
+      let docs = snap.docs;
+      
+      // Fallback: If empty, check the legacy 'class' field
+      if (docs.length === 0) {
+        const legacySnap = await db.collection('students')
+          .where('ownerId', '==', currentUser.uid)
+          .where('class', '==', sourceClass)
+          .get();
+        docs = legacySnap.docs;
+      }
+
+      if (docs.length === 0) {
+        previewBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #f44336;">No students found in this class.</td></tr>';
+        previewCount.innerText = "0";
+        promoteBtn.disabled = true;
+        return;
+      }
+
+      // Store for promotion
+      studentsToPromote = docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // Render Preview Table
+      previewCount.innerText = studentsToPromote.length;
+      previewBody.innerHTML = '';
+      studentsToPromote.forEach((stu, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td style="font-weight:600; color:#4a148c;">${stu.name || 'Unknown'}</td>
+          <td>${stu.roll || '-'}</td>
+          <td><span class="badge">${sourceClass}</span></td>
+          <td><span class="badge badge-year">${stu.academicYear || 'N/A'}</span></td>
+        `;
+        previewBody.appendChild(tr);
+      });
+
+      promoteBtn.disabled = false;
+
+    } catch (err) {
+      console.error(err);
+      previewBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: red;">Error: ${err.message}</td></tr>`;
+    }
+  });
+
+  // --- Show Confirmation ---
+  promoteBtn.addEventListener('click', () => {
+    const source = sourceSelect.value;
+    const target = targetSelect.value;
+    const targetYear = targetYearSelect.value;
+
+    if (!target) {
+      alert("Please select a Target Class to promote to.");
+      return;
+    }
+    if (!targetYear) {
+      alert("Please select a Target Academic Year.");
+      return;
+    }
+    if (source === target) {
+      alert("Source and Target classes cannot be the same.");
+      return;
+    }
+
+    document.getElementById('modalCount').innerText = studentsToPromote.length;
+    document.getElementById('modalSource').innerText = source;
+    document.getElementById('modalTarget').innerText = target;
+    document.getElementById('modalTargetYear').innerText = targetYear;
+    
+    confirmModal.classList.remove('hidden');
+  });
+
+  document.getElementById('cancelModalBtn').addEventListener('click', () => {
+    confirmModal.classList.add('hidden');
+  });
+
+  // --- Execute Bulk Update ---
+  document.getElementById('confirmModalBtn').addEventListener('click', async () => {
+    confirmModal.classList.add('hidden');
+    
+    const targetClass = targetSelect.value;
+    const targetYear = targetYearSelect.value;
+    const btnText = promoteBtn.innerHTML;
+    
+    // UI Loading state
+    promoteBtn.disabled = true;
+    promoteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    progressWrap.style.display = 'block';
+    progressBar.style.width = '0%';
+
+    try {
+      let count = 0;
+      const total = studentsToPromote.length;
+      const CHUNK_SIZE = 400; // Firestore allows max 500 writes per batch
+
+      for (let i = 0; i < total; i += CHUNK_SIZE) {
+        const chunk = studentsToPromote.slice(i, i + CHUNK_SIZE);
+        const batch = db.batch();
+
+        chunk.forEach(stu => {
+          const ref = db.collection('students').doc(stu.id);
+          // Update Class and Academic Year (including legacy fallback)
+          batch.update(ref, { 
+            studentClass: targetClass,
+            class: targetClass, 
+            academicYear: targetYear
+          });
+        });
+
+        await batch.commit();
+        
+        // Update Progress Bar
+        count += chunk.length;
+        const percent = Math.round((count / total) * 100);
+        progressBar.style.width = percent + '%';
+      }
+
+      // Success UI
+      setTimeout(() => {
+        alert(`✅ Success! ${total} students have been promoted to Class ${targetClass} for the year ${targetYear}.`);
+        window.location.reload(); // Reload page to reset state
+      }, 500);
+
+    } catch (err) {
+      console.error("Promotion Error:", err);
+      alert("❌ Failed to promote students. Error: " + err.message);
+      promoteBtn.disabled = false;
+      promoteBtn.innerHTML = btnText;
+      progressWrap.style.display = 'none';
+    }
+  });
+
+  // --- Logout ---
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    if(confirm('Are you sure you want to logout?')) {
+      auth.signOut().then(() => { window.location.href = 'login.html'; });
+    }
+  });
+
+</script>
+</body>
+</html>

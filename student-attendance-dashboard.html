@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Attendance Dashboard | School Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--navy:#172554;--primary:#4f46e5;--purple:#7c3aed;--green:#059669;--red:#dc2626;--amber:#d97706;--bg:#f4f6fb;--ink:#172033;--muted:#64748b;--line:#e2e8f0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+.topbar{background:linear-gradient(120deg,#172554,#4338ca,#6d28d9);color:#fff;padding:22px clamp(16px,4vw,42px);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:0 8px 25px #17255420}
+.brand{display:flex;align-items:center;gap:13px}.brand-icon{width:48px;height:48px;border-radius:15px;background:#ffffff20;display:grid;place-items:center;font-size:22px}.brand h1{font-size:clamp(20px,3vw,27px);font-weight:800;letter-spacing:-.5px}.brand p{font-size:12px;color:#dbeafe;margin-top:4px}
+.top-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.dashboard-link{color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:background .2s,transform .2s}.dashboard-link:hover{background:#ffffff25;transform:translateY(-1px)}.pill{padding:8px 12px;border:1px solid #ffffff30;border-radius:999px;background:#ffffff12;font-size:12px;font-weight:600}
+.page{max-width:1500px;margin:auto;padding:25px clamp(12px,3vw,34px) 40px}
+.toolbar{display:flex;align-items:end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.toolbar h2{font-size:21px;font-weight:800}.toolbar p{color:var(--muted);font-size:13px;margin-top:5px}
+.filters{display:flex;gap:9px;flex-wrap:wrap;align-items:end}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}.field input,.field select{height:41px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 11px;font:500 13px Inter;min-width:145px;color:var(--ink)}
+.btn{border:0;border-radius:10px;height:41px;padding:0 15px;font:700 13px Inter;cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center;transition:.2s}.btn-primary{background:var(--primary);color:white;box-shadow:0 5px 12px #4f46e530}.btn-primary:hover{background:#4338ca;transform:translateY(-1px)}.btn-light{background:#fff;color:#334155;border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}.stat{background:#fff;border:1px solid var(--line);border-radius:17px;padding:19px;box-shadow:0 4px 15px #17255408;position:relative;overflow:hidden}.stat:after{content:"";position:absolute;width:80px;height:80px;right:-20px;top:-24px;border-radius:50%;background:var(--tint)}.stat-head{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:12px;font-weight:700;gap:8px}.stat-icon{width:35px;height:35px;border-radius:11px;background:var(--tint);color:var(--accent);display:grid;place-items:center;font-size:15px}.stat-num{font-size:30px;font-weight:800;letter-spacing:-1px;margin-top:13px}.stat-foot{font-size:11px;color:var(--muted);margin-top:4px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:0 5px 20px #17255408}.panel-head{padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line)}.panel-head h3{font-size:16px;font-weight:800}.panel-head p{font-size:12px;color:var(--muted);margin-top:4px}.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted)}.legend span{display:flex;align-items:center;gap:6px}.key{width:8px;height:8px;border-radius:50%;display:inline-block}.key-green{background:#10b981}.key-red{background:#ef4444}
+.table-wrap{overflow:auto;max-height:65vh}table{width:100%;border-collapse:collapse;min-width:760px;font-size:12px}th,td{padding:13px 15px;border-bottom:1px solid #edf0f5;text-align:left;white-space:nowrap}th{position:sticky;top:0;background:#f8fafc;color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:.55px;z-index:1}tbody tr:hover{background:#f8faff}.row-absent{background:#fff1f2!important}.row-absent td{color:#991b1b}.row-absent:hover{background:#ffe4e6!important}.row-present td:first-child{font-weight:700}.status{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800}.status-present{background:#d1fae5;color:#065f46}.status-absent{background:#fee2e2;color:#991b1b}.status-na{background:#f1f5f9;color:#475569}.class-badge{background:#eef2ff;color:#4338ca;padding:4px 8px;border-radius:7px;font-weight:800;font-size:10px}.empty{padding:45px 18px;text-align:center;color:#94a3b8}.empty i{font-size:30px;margin-bottom:12px;display:block}.notice{margin-bottom:15px;padding:12px 14px;border-radius:10px;font-size:12px;display:none}.notice.error{display:block;background:#fff1f2;color:#991b1b;border:1px solid #fecdd3}.notice.info{display:block;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}.loading{opacity:.6;pointer-events:none}
+@media(max-width:850px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar{align-items:stretch}.filters{width:100%}.field{flex:1}.field input,.field select{width:100%;min-width:0}}
+@media(max-width:480px){.topbar{padding:17px 14px}.brand-icon{width:41px;height:41px}.top-meta{width:100%}.pill{font-size:10px}.page{padding:16px 10px 28px}.stats{gap:9px}.stat{padding:13px}.stat-num{font-size:25px}.stat-head{font-size:10px}.stat-icon{width:29px;height:29px}.filters{display:grid;grid-template-columns:1fr 1fr}.filters .btn{width:100%}.panel-head{padding:15px}.toolbar h2{font-size:19px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="brand-icon"><i class="fa-solid fa-user-graduate"></i></div><div><h1>Student Attendance</h1><p>School-wise • Class-wise attendance dashboard</p></div></div>
+  <div class="top-meta"><a class="pill dashboard-link" href="index.html"><i class="fa-solid fa-gauge-high"></i> Dashboard</a><span class="pill" id="schoolBadge"><i class="fa-solid fa-school"></i> Loading school…</span><span class="pill" id="ownerBadge"><i class="fa-solid fa-user-shield"></i> Verifying account…</span></div>
+</header>
+<main class="page">
+  <div class="toolbar">
+    <div><h2>Attendance Overview</h2><p>Daily attendance, monthly summaries, and absent students.</p></div>
+    <div class="filters">
+      <div class="field"><label for="dateInput">Daily date</label><input type="date" id="dateInput"></div>
+      <div class="field"><label for="monthInput">Monthly report</label><input type="month" id="monthInput"></div>
+      <div class="field"><label for="classFilter">Class</label><select id="classFilter"><option value="">All classes</option></select></div>
+      <button class="btn btn-primary" id="refreshBtn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+    </div>
+  </div>
+  <div id="notice" class="notice"></div>
+  <section class="stats">
+    <article class="stat" style="--tint:#e0e7ff;--accent:#4338ca"><div class="stat-head">Total Students <span class="stat-icon"><i class="fa-solid fa-users"></i></span></div><div class="stat-num" id="totalCount">—</div><div class="stat-foot">Students belonging to this owner</div></article>
+    <article class="stat" style="--tint:#d1fae5;--accent:#047857"><div class="stat-head">Present Today <span class="stat-icon"><i class="fa-solid fa-user-check"></i></span></div><div class="stat-num" id="presentCount">—</div><div class="stat-foot">Unique students scanned today</div></article>
+    <article class="stat" style="--tint:#fee2e2;--accent:#b91c1c"><div class="stat-head">Absent Today <span class="stat-icon"><i class="fa-solid fa-user-xmark"></i></span></div><div class="stat-num" id="absentCount">—</div><div class="stat-foot">Students without a scan today</div></article>
+    <article class="stat" style="--tint:#fef3c7;--accent:#b45309"><div class="stat-head">Classes <span class="stat-icon"><i class="fa-solid fa-layer-group"></i></span></div><div class="stat-num" id="classCount">—</div><div class="stat-foot">Classes represented in student records</div></article>
+  </section>
+  <section class="panel">
+    <div class="panel-head">
+      <div><h3 id="tableTitle">Daily Student Attendance</h3><p id="tableSubtitle">Present and absent students, grouped by class.</p></div>
+      <div class="legend"><span><i class="key key-green"></i> Present</span><span><i class="key key-red"></i> Absent (red row)</span></div>
+    </div>
+    <div class="table-wrap"><table><thead id="tableHead"><tr><th>Student</th><th>Class</th><th>Roll</th><th>Date</th><th>Entry Time</th><th>Status</th></tr></thead><tbody id="tableBody"><tr><td colspan="6" class="empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading attendance…</td></tr></tbody></table></div>
+  </section>
+</main>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyCOzfdIXBeh6drFhml4pOFEvPG8xV_Wjzw",authDomain:"school-management-projec-9db7a.firebaseapp.com",projectId:"school-management-projec-9db7a",storageBucket:"school-management-projec-9db7a.firebasestorage.app",messagingSenderId:"975842483778",appId:"1:975842483778:web:d1708792ff56014f3317db"};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(),db=firebase.firestore();
+const $=id=>document.getElementById(id);
+let ownerId=null,schoolId=null,students=[],currentDailyRecords=[],monthlyMode=false;
+const localDate=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function showNotice(text,type="error"){$("notice").textContent=text;$("notice").className="notice "+type}
+function hideNotice(){$("notice").style.display="none";$("notice").className="notice"}
+function timeText(v){if(!v)return "—";try{let d=typeof v.toDate==="function"?v.toDate():(v.seconds?new Date(v.seconds*1000):new Date(v));if(isNaN(d))return "—";return d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",hour12:true})}catch{return "—"}}
+function getStudentId(docSnap,data){return data.studentId||data.studentDocId||docSnap.id.replace(/^student_/,"")}
+function normalize(v){return String(v??"").trim().toLowerCase()}
+function studentClass(s){return String(s.studentClass??s.class??"Unassigned").trim()||"Unassigned"}
+function studentRoll(s){return String(s.roll??"").trim()}
+function studentName(s){return String(s.name??s.studentName??"Unnamed student").trim()}
+function populateClassFilter(){const sel=$("classFilter"),old=sel.value;const classes=[...new Set(students.map(studentClass))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));sel.innerHTML='<option value="">All classes</option>'+classes.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");if(classes.includes(old))sel.value=old;$("classCount").textContent=classes.length}
+async function getOwnerProfile(user){
+  let profile=null;
+  const byUid=await db.collection("user").where("uid","==",user.uid).limit(1).get();
+  if(!byUid.empty)profile=byUid.docs[0].data();
+  if(!profile){const ownDoc=await db.collection("user").doc(user.uid).get();if(ownDoc.exists)profile=ownDoc.data()}
+  if(!profile)throw new Error("Your owner profile was not found in the user collection. Please check the logged-in admin account.");
+  if(profile.role && !["admins","admin","owner"].includes(String(profile.role).toLowerCase()))throw new Error("This page is available to the school owner/admin account.");
+  ownerId=user.uid;
+  schoolId=profile.schoolId||profile.schoolID||user.uid;
+  $("ownerBadge").innerHTML='<i class="fa-solid fa-user-shield"></i> Owner: '+escapeHtml(ownerId.slice(0,12))+(ownerId.length>12?"…":"");
+  $("schoolBadge").innerHTML='<i class="fa-solid fa-school"></i> School: '+escapeHtml(schoolId);
+}
+async function loadStudents(){
+  const snap=await db.collection("students").where("ownerId","==",ownerId).get();
+  students=snap.docs.map(d=>({docId:d.id,...d.data()}));
+  populateClassFilter();$("totalCount").textContent=students.length;
+  if(!students.length)showNotice("No student records were found for this ownerId. Check that students have ownerId = "+ownerId,"info");
+}
+async function readDateAttendance(date){
+  const snap=await db.collection("attendance").doc(schoolId).collection(date).get();
+  const map=new Map();
+  snap.forEach(d=>{
+    const x=d.data()||{};
+    if(!(x.studentId||x.studentDocId||d.id.startsWith("student_")))return;
+    const id=getStudentId(d,x);
+    if(id)map.set(String(id),{...x,studentId:String(id),docId:d.id});
+  });
+  return map;
+}
+function filteredStudents(){const c=$("classFilter").value;return students.filter(s=>!c||studentClass(s)===c).sort((a,b)=>studentClass(a).localeCompare(studentClass(b),undefined,{numeric:true})||studentRoll(a).localeCompare(studentRoll(b),undefined,{numeric:true})||studentName(a).localeCompare(studentName(b)))}
+function renderDaily(date,attendance){
+  monthlyMode=false;$("tableTitle").textContent="Daily Student Attendance";$("tableSubtitle").textContent="Date: "+date+" • Absent students are highlighted in red.";
+  $("tableHead").innerHTML="<tr><th>Student</th><th>Class</th><th>Roll</th><th>Date</th><th>Entry Time</th><th>Status</th></tr>";
+  const list=filteredStudents();let present=0;
+  const rows=list.map(s=>{const rec=attendance.get(s.docId)||attendance.get(String(s.studentId||""));const isPresent=!!rec;if(isPresent)present++;return `<tr class="${isPresent?"row-present":"row-absent"}"><td>${escapeHtml(studentName(s))}</td><td><span class="class-badge">${escapeHtml(studentClass(s))}</span></td><td>${escapeHtml(studentRoll(s)||"—")}</td><td>${escapeHtml(date)}</td><td>${isPresent?escapeHtml(timeText(rec.entryTime||rec.createdAt||rec.scanTime)):"—"}</td><td><span class="status ${isPresent?"status-present":"status-absent"}"><i class="fa-solid ${isPresent?"fa-check":"fa-xmark"}"></i>${isPresent?"Present":"Absent"}</span></td></tr>`});
+  $("tableBody").innerHTML=rows.length?rows.join(""):'<tr><td colspan="6" class="empty"><i class="fa-solid fa-users-slash"></i>No students match this class filter.</td></tr>';
+  $("presentCount").textContent=present;$("absentCount").textContent=Math.max(0,students.length-present);
+}
+function weekdaysThroughMonth(year,month){
+  const now=new Date(),isCurrent=year===now.getFullYear()&&month===now.getMonth()+1;
+  const end=isCurrent?now.getDate():new Date(year,month,0).getDate();let count=0;
+  for(let d=1;d<=end;d++){const dow=new Date(year,month-1,d).getDay();if(dow!==0)count++}
+  return count;
+}
+async function renderMonthly(){
+  monthlyMode=true;const val=$("monthInput").value;if(!val)throw new Error("Please select a month.");
+  const [year,month]=val.split("-").map(Number),days=weekdaysThroughMonth(year,month),lastDay=new Date(year,month,0).getDate();
+  const perStudent=new Map();students.forEach(s=>perStudent.set(s.docId,{present:0,dates:[]}));
+  const dates=[];for(let d=1;d<=lastDay;d++){const date=`${year}-${String(month).padStart(2,"0")}-${String(d).padStart(2,"0")}`;if(new Date(year,month-1,d).getDay()!==0 && (year<new Date().getFullYear()||month<=new Date().getMonth()+1||d<=new Date().getDate()))dates.push(date)}
+  await Promise.all(dates.map(async date=>{try{const records=await readDateAttendance(date);for(const s of students){if(records.has(s.docId)||records.has(String(s.studentId||""))){const p=perStudent.get(s.docId);p.present++;p.dates.push(date)}}}catch(e){console.warn("Could not read attendance for",date,e)} }));
+  $("tableTitle").textContent="Monthly Student Attendance";$("tableSubtitle").textContent=val+" • Absent days calculated using elapsed non-Sunday days; adjust if your school calendar differs.";
+  $("tableHead").innerHTML="<tr><th>Student</th><th>Class</th><th>Roll</th><th>Present Days</th><th>Absent Days*</th><th>Attendance</th></tr>";
+  const list=filteredStudents();let totalPresent=0;
+  const rows=list.map(s=>{const d=perStudent.get(s.docId)||{present:0};const absent=Math.max(0,days-d.present);totalPresent+=d.present;const isAbsent=absent>0;const pct=days?Math.round(d.present/days*100):0;return `<tr class="${isAbsent?"row-absent":"row-present"}"><td>${escapeHtml(studentName(s))}</td><td><span class="class-badge">${escapeHtml(studentClass(s))}</span></td><td>${escapeHtml(studentRoll(s)||"—")}</td><td><span class="status status-present">${d.present}</span></td><td><span class="status ${isAbsent?"status-absent":"status-na"}">${absent}</span></td><td>${pct}%</td></tr>`});
+  $("tableBody").innerHTML=rows.length?rows.join(""):'<tr><td colspan="6" class="empty">No students match this class filter.</td></tr>';
+  $("presentCount").textContent=students.length?Math.round(totalPresent/students.length):0;
+  $("absentCount").textContent=students.length?Math.max(0,students.length*days-totalPresent):0;
+}
+async function refresh(){
+  $("refreshBtn").classList.add("loading");hideNotice();
+  try{
+    if(!ownerId||!schoolId)throw new Error("School account has not loaded yet.");
+    await loadStudents();
+    if(monthlyMode){await renderMonthly();return}
+    const date=$("dateInput").value;if(!date)throw new Error("Please select a date.");
+    const records=await readDateAttendance(date);renderDaily(date,records);
+  }catch(e){console.error(e);showNotice(e.message||"Unable to load attendance. Check Firestore rules and data structure.");$("tableBody").innerHTML='<tr><td colspan="6" class="empty"><i class="fa-solid fa-triangle-exclamation"></i>Could not load attendance.</td></tr>'}
+  finally{$("refreshBtn").classList.remove("loading")}
+}
+$("refreshBtn").addEventListener("click",refresh);
+$("dateInput").addEventListener("change",()=>{monthlyMode=false;refresh()});
+$("monthInput").addEventListener("change",async()=>{if(!$("monthInput").value)return;monthlyMode=true;$("refreshBtn").classList.add("loading");hideNotice();try{await loadStudents();await renderMonthly()}catch(e){showNotice(e.message||"Unable to load monthly report")}finally{$("refreshBtn").classList.remove("loading")}});
+$("classFilter").addEventListener("change",refresh);
+(function initDates(){const d=new Date();$("dateInput").value=localDate();$("monthInput").value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`})();
+auth.onAuthStateChanged(async user=>{
+  if(!user){showNotice("Please log in with the school owner/admin account first.");$("tableBody").innerHTML='<tr><td colspan="6" class="empty">Login required.</td></tr>';return}
+  try{await getOwnerProfile(user);await loadStudents();await refresh()}catch(e){console.error(e);showNotice(e.message||"Unable to verify owner account");$("tableBody").innerHTML='<tr><td colspan="6" class="empty">Owner verification failed.</td></tr>'}
+});
+</script>
+</body>
+</html>

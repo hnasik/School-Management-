@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notice Board Manager | School Panel</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+            --border-color: #e5e7eb;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+            /* Sidebar tokens */
+            --sb-width: 260px;
+            --sb-bg: #1a2a6c;
+            --sb-text: #ecf0f1;
+            --sb-accent: #F5C518;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .hidden { display: none !important; }
+
+        /* ============================================================
+           LOADER
+           ============================================================ */
+        .loader {
+            position: fixed; inset: 0;
+            display: flex; justify-content: center; align-items: center;
+            background: rgba(26, 42, 108, 0.95);
+            z-index: 9999;
+        }
+        .loader-circle {
+            width: 50px; height: 50px;
+            border: 5px solid rgba(255,255,255,.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ============================================================
+           APP LAYOUT
+           ============================================================ */
+        #app {
+            min-height: 100vh;
+            display: flex;
+            position: relative;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sb-width);
+            flex-shrink: 0;
+            background: var(--sb-bg);
+            color: var(--sb-text);
+            padding: 2rem 1rem 1rem;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
+        .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.3); }
+
+        .sidebar h2 {
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            text-align: center;
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .sidebar h2 i {
+            font-size: 1.6rem;
+            color: var(--sb-accent);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            color: #e5e7eb;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+        }
+        .nav-link.active {
+            background: linear-gradient(135deg, #F5C518, #f97316);
+            color: #1f2933;
+            font-weight: 600;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.25);
+        }
+        .nav-link.active i { color: #1f2933; }
+
+        .logout-btn {
+            margin-top: 2rem;
+            background: rgba(239, 68, 68, 0.15);
+            color: #fecaca;
+        }
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fee2e2;
+        }
+
+        /* MAIN AREA */
+        .main-wrap {
+            flex: 1;
+            min-width: 0;
+            padding-bottom: 50px;
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        header h1 { font-size: 1.8rem; color: var(--primary-color); }
+        header p { color: var(--text-light); font-size: 0.95rem; }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        /* PANELS */
+        .panel {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        .panel-title {
+            font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--bg-color); padding-bottom: 0.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* FORM ELEMENTS */
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
+
+        input[type="text"], textarea {
+            width: 100%; padding: 0.85rem; border: 1px solid var(--border-color);
+            border-radius: 8px; font-family: inherit; transition: border-color 0.2s;
+            font-size: 0.95rem;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        input:focus, textarea:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            display: inline-block; width: 100%; padding: 0.9rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color), #7c3aed); color: white; border: none;
+            border-radius: 8px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(79,70,229,0.3); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        /* NOTICE LIST */
+        .notice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .notice-item {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 1.2rem;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .notice-item h4 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 0.3rem;
+            padding-right: 30px;
+        }
+
+        .notice-item .date {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .notice-item p {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            white-space: pre-wrap;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.2rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .delete-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-light);
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        /* Toast */
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
+            text-align: center; border-radius: 8px; padding: 16px; position: fixed;
+            z-index: 9999; left: 50%; bottom: 30px; transform: translateX(-50%);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 14px;
+            opacity: 0; transition: opacity 0.3s, bottom 0.3s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        #toast.error { background-color: #ef4444; }
+        #toast.success { background-color: #10b981; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            #app { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: sticky;
+                top: 0;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.75rem 1rem;
+                max-height: none;
+                overflow: visible;
+                box-shadow: 0 4px 20px rgba(0,0,0,.25);
+            }
+            .sidebar h2 {
+                width: 100%;
+                justify-content: flex-start;
+                font-size: 1.1rem;
+                margin-bottom: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            .sidebar h2 i { font-size: 1.2rem; }
+            .nav-link { padding: 0.45rem 0.75rem; font-size: 0.8rem; margin-bottom: 0; border-radius: 8px; }
+            .nav-link i { width: auto; font-size: 0.85rem; }
+            .logout-btn { margin-top: 0; margin-left: auto; }
+            header { padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+            header h1 { font-size: 1.4rem; }
+        }
+
+        @media (max-width: 640px) {
+            .sidebar { padding: 0.6rem 0.75rem; }
+            .nav-link { padding: 0.4rem 0.65rem; font-size: 0.75rem; }
+            .nav-link i { font-size: 0.8rem; }
+            header { padding: 1rem; }
+            header h1 { font-size: 1.2rem; }
+            header p { font-size: 0.85rem; }
+            .container { padding: 0 0.75rem; gap: 1.25rem; }
+            .panel { padding: 1.25rem; }
+            .panel-title { font-size: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader" id="loader">
+    <div class="loader-circle"></div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2><i class="fas fa-graduation-cap"></i> School Panel</h2>
+
+        <a href="index.html" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="student.html" class="nav-link"><i class="fas fa-user-graduate"></i> Students</a>
+        <a href="upload.html" class="nav-link"><i class="fas fa-cloud-arrow-up"></i> Upload Students</a>
+        <a href="teacher.html" class="nav-link"><i class="fas fa-chalkboard-teacher"></i> Teachers</a>
+        <a href="attendence.html" class="nav-link"><i class="fas fa-calendar-check"></i> Attendance</a>
+        <a href="generate-id-card.html" class="nav-link"><i class="fas fa-id-card"></i> ID Card</a>
+        <a href="book-delivery-report.html" class="nav-link"><i class="fas fa-book-open"></i> Book Delivery</a>
+        <a href="admit_card.html" class="nav-link"><i class="fas fa-id-card"></i> Admit Card</a>
+        <a href="marksheet.html" class="nav-link"><i class="fas fa-file-alt"></i> Marksheet</a>
+        <a href="payment-history.html" class="nav-link"><i class="fas fa-history"></i> Payment History</a>
+        <a href="settle-due.html" class="nav-link"><i class="fas fa-rupee-sign"></i> Settle Due</a>
+        <a href="download.html" class="nav-link"><i class="fas fa-download"></i> Download</a>
+        <a href="print.html" class="nav-link"><i class="fas fa-print"></i> Print Admission</a>
+        <a href="edit.html" class="nav-link"><i class="fas fa-pen-to-square"></i> Edit Student</a>
+        
+        <!-- NEW NOTICE LINK (Active) -->
+        <a href="admin-notice.html" class="nav-link active"><i class="fas fa-bullhorn"></i> Notice Board</a>
+
+        <div class="nav-link logout-btn" id="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-wrap">
+
+        <!-- Header -->
+        <header>
+            <h1>Notice Board Manager</h1>
+            <p>Publish announcements to the Parent Portal instantly</p>
+        </header>
+
+        <div class="container">
+
+            <!-- Left: Create Notice -->
+            <div class="panel">
+                <div class="panel-title">
+                    <span>📝 Write a New Notice</span>
+                </div>
+
+                <form id="noticeForm">
+                    <div class="form-group">
+                        <label for="noticeTitle">Notice Title</label>
+                        <input type="text" id="noticeTitle" placeholder="e.g., Holiday Announcement, Exam Schedule" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="noticeMessage">Notice Message</label>
+                        <textarea id="noticeMessage" placeholder="Write the full details here..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn" id="publishBtn">
+                        <i class="fas fa-paper-plane"></i> Publish Notice
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right: Recent Notices -->
+            <div class="panel">
+                <div class="panel-title">
+                    <span>📢 Recently Published</span>
+                </div>
+                
+                <div id="noticeList" class="notice-list">
+                    <div class="empty-state" id="loadingState">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading notices...</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="toast">Message here</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+    // ==========================================
+    // 1. FIREBASE CONFIG & INIT
+    // ==========================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyCOzfdIXBeh6drFhml4pOFEvPG8xV_Wjzw",
+        authDomain: "school-management-projec-9db7a.firebaseapp.com",
+        projectId: "school-management-projec-9db7a",
+        storageBucket: "school-management-projec-9db7a.firebasestorage.app",
+        messagingSenderId: "975842483778",
+        appId: "1:975842483778:web:d1708792ff56014f3317db",
+        measurementId: "G-1X2Q7LE6G3"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // State
+    let currentUser = null;
+
+    // ==========================================
+    // 2. AUTH & INIT
+    // ==========================================
+    auth.onAuthStateChanged((user) => {
+        if (!user) {
+            window.location.href = "login.html";
+            return;
+        }
+        currentUser = user;
+        loadNotices();
+    });
+
+    // ==========================================
+    // 3. PUBLISH NOTICE
+    // ==========================================
+    document.getElementById('noticeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const title = document.getElementById('noticeTitle').value.trim();
+        const message = document.getElementById('noticeMessage').value.trim();
+        const btn = document.getElementById('publishBtn');
+
+        if (!title || !message) {
+            showToast("Please fill in both Title and Message.", "error");
+            return;
+        }
+
+        // UI Loading state
+        const originalBtnText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
+        btn.disabled = true;
+
+        try {
+            // Add to Firestore with the Admin's Owner ID
+            await db.collection('notices').add({
+                ownerId: currentUser.uid, // Important: Ties the notice to this school
+                title: title,
+                message: message,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // Clear form
+            document.getElementById('noticeForm').reset();
+            showToast("Notice published successfully!", "success");
+            
+            // Reload list
+            loadNotices();
+
+        } catch (error) {
+            console.error("Error publishing notice:", error);
+            showToast("Failed to publish notice: " + error.message, "error");
+        } finally {
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
+        }
+    });
+
+    // ==========================================
+    // 4. LOAD RECENT NOTICES
+    // ==========================================
+    async function loadNotices() {
+        const listContainer = document.getElementById('noticeList');
+        listContainer.innerHTML = `
+            <div class="empty-state" id="loadingState">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading notices...</p>
+            </div>
+        `;
+
+        try {
+            // Fetch notices for this specific owner
+            const snapshot = await db.collection('notices')
+                                     .where('ownerId', '==', currentUser.uid)
+                                     .get();
+
+            if (snapshot.empty) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bullhorn" style="opacity: 0.3;"></i>
+                        <p>No notices published yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by date (newest first)
+            const notices = [];
+            snapshot.forEach(doc => {
+                notices.push({ id: doc.id, ...doc.data() });
+            });
+            
+            notices.sort((a, b) => {
+                const dateA = a.createdAt ? a.createdAt.toMillis() : 0;
+                const dateB = b.createdAt ? b.createdAt.toMillis() : 0;
+                return dateB - dateA;
+            });
+
+            listContainer.innerHTML = '';
+
+            notices.forEach(notice => {
+                // Format Date
+                let dateStr = "Just now";
+                if (notice.createdAt) {
+                    const date = notice.createdAt.toDate();
+                    dateStr = date.toLocaleDateString() + " at " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                }
+
+                const item = document.createElement('div');
+                item.className = 'notice-item';
+                item.innerHTML = `
+                    <button class="delete-btn" onclick="deleteNotice('${notice.id}')" title="Delete Notice">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <h4>${escapeHtml(notice.title)}</h4>
+                    <div class="date"><i class="far fa-clock"></i> ${dateStr}</div>
+                    <p>${escapeHtml(notice.message)}</p>
+                `;
+                listContainer.appendChild(item);
+            });
+
+        } catch (error) {
+            console.error("Error loading notices:", error);
+            listContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                    <p>Failed to load notices. Please check connection.</p>
+                </div>
+            `;
+        }
+    }
+
+    // ==========================================
+    // 5. DELETE NOTICE
+    // ==========================================
+    window.deleteNotice = async function(id) {
+        if (!confirm("Are you sure you want to delete this notice? Parents will no longer see it.")) return;
+
+        try {
+            await db.collection('notices').doc(id).delete();
+            showToast("Notice deleted.", "success");
+            loadNotices(); // Reload the list
+        } catch (error) {
+            console.error("Error deleting notice:", error);
+            showToast("Failed to delete notice.", "error");
+        }
+    };
+
+    // ==========================================
+    // 6. UTILITIES (Logout, Toast, Escape)
+    // ==========================================
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        if (confirm('Are you sure you want to logout?')) {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            });
+        }
+    });
+
+    function showToast(message, type) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = type === 'error' ? 'error show' : 'success show';
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Reveal App
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('app').classList.remove('hidden');
+        }, 500);
+    });
+</script>
+</body>
+</html>

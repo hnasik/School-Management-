@@ -1,0 +1,729 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TC Certificate | Admin Panel</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Added QR Code Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+        --purple-dark:#4a148c; --purple-mid:#7b1fa2; --purple-light:#9c27b0;
+        --purple-soft:#f3ecff; --text:#2c2c3e; --muted:#7a7a92; --border:#e6e1f5;
+    }
+    body{
+        font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;
+        background:#eef0f7; color:var(--text); min-height:100vh;
+    }
+
+    /* ============ SIDEBAR ============ */
+    .sidebar{
+        position:fixed; top:0; left:0; width:265px; height:100vh;
+        background:linear-gradient(180deg,#4a148c,#7b1fa2,#9c27b0);
+        color:#fff; padding:24px 16px; display:flex; flex-direction:column;
+        overflow-y:auto; z-index:100; box-shadow:4px 0 26px rgba(74,20,140,.28);
+        transition:transform .32s ease;
+    }
+    .sidebar::-webkit-scrollbar{width:6px;}
+    .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:6px;}
+    .brand{display:flex;align-items:center;gap:12px;padding:6px 10px 22px;border-bottom:1px solid rgba(255,255,255,.16);margin-bottom:16px;}
+    .brand-icon{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;backdrop-filter:blur(6px);}
+    .brand h2{font-size:16px;font-weight:700;letter-spacing:.3px;}
+    .brand span{font-size:11px;opacity:.75;letter-spacing:.6px;text-transform:uppercase;}
+    .nav{display:flex;flex-direction:column;gap:4px;flex:1;}
+    .nav a{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;color:rgba(255,255,255,.85);text-decoration:none;font-size:14px;font-weight:500;transition:all .22s ease;white-space:nowrap;}
+    .nav a:hover{background:rgba(255,255,255,.14);color:#fff;transform:translateX(3px);}
+    .nav a.active{background:rgba(255,255,255,.95);color:var(--purple-dark);font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.18);}
+    .nav a i{font-style:normal;font-size:16px;width:20px;text-align:center;}
+    .sidebar-footer{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.16);font-size:11px;opacity:.65;text-align:center;letter-spacing:.5px;}
+
+    /* ============ MAIN ============ */
+    .main{margin-left:265px;padding:28px 32px 70px;min-height:100vh;}
+    .topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px;}
+    .topbar h1{font-size:26px;font-weight:700;color:var(--purple-dark);letter-spacing:.2px;}
+    .topbar p{font-size:13.5px;color:var(--muted);margin-top:5px;}
+
+    /* ============ CARDS ============ */
+    .card{background:rgba(255,255,255,.95);backdrop-filter:blur(14px);border-radius:16px;padding:22px 24px;margin-bottom:22px;border:1px solid rgba(255,255,255,.75);box-shadow:0 10px 34px rgba(74,20,140,.09);}
+    .card-title{font-size:15px;font-weight:700;color:var(--purple-dark);letter-spacing:.3px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+
+    /* ============ FORM ============ */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;align-items:end;}
+    .field{display:flex;flex-direction:column;gap:7px;}
+    .field label{font-size:12.5px;font-weight:600;color:#5b5b72;letter-spacing:.3px;}
+    .field input, .field select, .field textarea{
+        width:100%; padding:11px 14px; font-size:14px; font-family:inherit; color:var(--text);
+        background:#fbfaff; border:1.5px solid var(--border); border-radius:12px; outline:none; transition:all .2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus{border-color:var(--purple-light);background:#fff;box-shadow:0 0 0 4px rgba(156,39,176,.10);}
+    .field input::placeholder, .field textarea::placeholder{color:#a9a7bd;}
+    .field input[readonly]{background:#f4f4f9;color:var(--muted);cursor:not-allowed;}
+
+    /* ============ BUTTONS ============ */
+    .btn{font-family:inherit;font-size:13.5px;font-weight:600;padding:11px 18px;border-radius:12px;border:none;cursor:pointer;transition:all .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;letter-spacing:.2px;}
+    .btn:active{transform:scale(.97);}
+    .btn:disabled{opacity:.6;cursor:not-allowed;}
+    .btn-primary{background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff;box-shadow:0 8px 20px rgba(123,31,162,.30);}
+    .btn-primary:hover:not(:disabled){background:linear-gradient(135deg,#6a1b9a,#8e24aa);box-shadow:0 10px 26px rgba(123,31,162,.40);transform:translateY(-1px);}
+    .btn-outline{background:#fff;color:var(--purple-dark);border:1.5px solid var(--border);box-shadow:0 4px 14px rgba(74,20,140,.06);}
+    .btn-outline:hover:not(:disabled){border-color:var(--purple-light);background:var(--purple-soft);}
+    .btn-success{background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 8px 20px rgba(16,185,129,.3);}
+    .btn-success:hover:not(:disabled){background:linear-gradient(135deg,#059669,#047857);transform:translateY(-1px);}
+
+    /* ============ PREVIEW / CERTIFICATE ============ */
+    .preview-wrapper {
+        background: #555; padding: 30px; border-radius: 16px; overflow-x: auto;
+        display: flex; justify-content: center;
+    }
+    
+    .tc-container {
+        width: 210mm; min-height: 297mm; background: #fff; padding: 20mm;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;
+        font-family: 'Times New Roman', Times, serif; color: #000;
+        transform-origin: top center; transition: transform 0.2s ease;
+        overflow: hidden; /* Ensures watermark doesn't spill out */
+    }
+
+    /* Certificate border */
+    .tc-container::before {
+        content: ''; position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm;
+        border: 2px solid #000; pointer-events: none; z-index: 2;
+    }
+    .tc-container::after {
+        content: ''; position: absolute; top: 12mm; left: 12mm; right: 12mm; bottom: 12mm;
+        border: 1px solid #000; pointer-events: none; z-index: 2;
+    }
+
+    /* NEW: Watermark */
+    .tc-watermark {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70%; max-height: 70%; object-fit: contain;
+        opacity: 0.08; z-index: 0; pointer-events: none;
+        filter: grayscale(100%);
+    }
+
+    .tc-header { text-align: center; margin-bottom: 20px; position: relative; z-index: 1; }
+    .tc-header img { height: 70px; margin-bottom: 10px; }
+    .tc-header h1 { font-size: 28px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .tc-header p { font-size: 14px; }
+
+    .tc-title { text-align: center; font-size: 22px; font-weight: bold; text-decoration: underline; margin: 30px 0; text-transform: uppercase; letter-spacing: 2px; position: relative; z-index: 1; }
+
+    .tc-body { font-size: 16px; line-height: 2; position: relative; z-index: 1; }
+    .tc-row { display: flex; margin-bottom: 8px; }
+    .tc-label { width: 200px; font-weight: bold; }
+    .tc-value { flex: 1; border-bottom: 1px dotted #000; padding-left: 10px; font-weight: 600; }
+
+    /* UPDATED: Footer with QR Code */
+    .tc-footer { 
+        margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end; 
+        position: relative; z-index: 1; 
+    }
+    .qr-box { text-align: center; }
+    .qr-box img, .qr-box canvas { width: 80px !important; height: 80px !important; margin-bottom: 5px; }
+    .qr-box p { font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .date-box { text-align: center; padding-bottom: 15px; }
+    .date-box p { font-weight: bold; font-size: 16px; }
+    
+    .sign-box { text-align: center; }
+    .sign-box img { height: 50px; margin-bottom: 5px; object-fit: contain; }
+    .sign-box .line { width: 180px; border-bottom: 1px solid #000; margin: 0 auto 5px; }
+    .sign-box p { font-weight: bold; font-size: 14px; }
+
+    /* ============ TOAST ============ */
+    .toast{position:fixed;bottom:26px;right:26px;background:#32304a;color:#fff;padding:14px 22px;border-radius:14px;font-size:13.5px;font-weight:600;box-shadow:0 14px 40px rgba(0,0,0,.28);opacity:0;transform:translateY(20px);pointer-events:none;transition:all .3s cubic-bezier(.2,.8,.3,1);z-index:999;max-width:340px;}
+    .toast.show{opacity:1;transform:translateY(0);}
+    .toast.success{background:linear-gradient(135deg,#1b8a4a,#22c55e);}
+    .toast.error{background:linear-gradient(135deg,#b71c1c,#e53935);}
+
+    /* ============ MOBILE ============ */
+    .menu-toggle{display:none;position:fixed;top:16px;left:16px;width:46px;height:46px;border:none;border-radius:13px;background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff;font-size:20px;cursor:pointer;z-index:200;box-shadow:0 8px 22px rgba(74,20,140,.35);align-items:center;justify-content:center;}
+    .overlay{display:none;position:fixed;inset:0;background:rgba(30,10,50,.45);backdrop-filter:blur(2px);z-index:99;}
+    .overlay.show{display:block;}
+    @media (max-width:960px){
+        .sidebar{transform:translateX(-100%);}
+        .sidebar.open{transform:translateX(0);}
+        .main{margin-left:0;padding:78px 16px 60px;}
+        .menu-toggle{display:flex;}
+        .topbar h1{font-size:21px;}
+        .card{padding:18px;}
+        .tc-container { transform: scale(0.6); margin-bottom: -100mm; }
+    }
+    @media (max-width:600px) {
+        .tc-container { transform: scale(0.4); margin-bottom: -170mm; }
+    }
+
+    /* ============ PRINT ============ */
+    @media print {
+        @page { size: A4 portrait; margin: 0; }
+        body { background: #fff; }
+        .sidebar, .menu-toggle, .overlay, .no-print, .toast { display: none !important; }
+        .main { margin: 0; padding: 0; }
+        .card { box-shadow: none; border: none; background: #fff; padding: 0; margin: 0; }
+        .preview-wrapper { background: #fff; padding: 0; overflow: visible; display: block; }
+        .tc-container { box-shadow: none; transform: none !important; margin: 0 !important; width: 100%; height: auto; min-height: auto; }
+    }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+<button class="menu-toggle" id="menuToggle">☰</button>
+
+<aside class="sidebar" id="sidebar">
+    <div class="brand">
+        <div class="brand-icon">🎓</div>
+        <div><h2>School Admin</h2><span>Management Panel</span></div>
+    </div>
+    <nav class="nav">
+        <a href="index.html"><i>📊</i><span>Dashboard</span></a>
+        <a href="student.html"><i>👨‍🎓</i><span>Students</span></a>
+        <a href="edit.html"><i>✏️</i><span>Edit Student</span></a>
+        <a href="generate-id-card.html"><i>🪪</i><span>ID Card</span></a>
+        <a href="admit_card.html"><i>📄</i><span>Admit Card</span></a>
+        <a href="tc-certificate.html" class="active"><i>📜</i><span>TC Certificate</span></a>
+        <a href="upgrade class.html"><i>⬆️</i><span>Bulk Promote</span></a>
+        <a href="student-archive.html"><i>🗄️</i><span>Archive &amp; Backup</span></a>
+        <a href="Notice Board.html"><i>📢</i><span>Notice Board</span></a>
+        <a href="class-routine.html"><i>🗓️</i><span>Class Routine</span></a>
+    </nav>
+    <div class="sidebar-footer">TC Generator · v1.2</div>
+</aside>
+
+<main class="main">
+    <header class="topbar no-print">
+        <div>
+            <h1>Transfer Certificate (TC)</h1>
+            <p>Select a class and student to auto-fill, or search by ID.</p>
+        </div>
+        <div class="auth-chip" id="authChip"><span class="dot"></span><span id="authText">Checking sign-in…</span></div>
+    </header>
+
+    <!-- Search & Inputs -->
+    <section class="card no-print">
+        <h2 class="card-title">1 · Student Details</h2>
+        
+        <!-- Quick Select (Class -> Student) -->
+        <div class="grid" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed var(--border);">
+            <div class="field">
+                <label>Select Class</label>
+                <select id="classSelect">
+                    <option value="">— Select Class —</option>
+                    <option value="nursery">NURSERY</option>
+                    <option value="lkg">LKG</option>
+                    <option value="ukg">UKG</option>
+                    <option value="1">Class 1</option>
+                    <option value="2">Class 2</option>
+                    <option value="3">Class 3</option>
+                    <option value="4">Class 4</option>
+                    <option value="5">Class 5</option>
+                    <option value="6">Class 6</option>
+                    <option value="7">Class 7</option>
+                    <option value="8">Class 8</option>
+                    <option value="9">Class 9</option>
+                    <option value="10">Class 10</option>
+                    <option value="11">Class 11</option>
+                    <option value="12">Class 12</option>
+                </select>
+            </div>
+            <div class="field" style="grid-column: span 2;">
+                <label>Select Student</label>
+                <select id="studentSelect" disabled>
+                    <option value="">— Select Class First —</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="field">
+                <label>Or Search by ID</label>
+                <div style="display:flex; gap:8px;">
+                    <input id="searchId" type="text" placeholder="Enter Student ID..." style="flex:1;">
+                    <button class="btn btn-primary" id="btnSearch" style="padding:11px 16px;"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            <div class="field">
+                <label>Full Name</label>
+                <input id="studentName" type="text" placeholder="Auto-filled...">
+            </div>
+            <div class="field">
+                <label>Father's Name</label>
+                <input id="fatherName" type="text" placeholder="Auto-filled...">
+            </div>
+            <div class="field">
+                <label>Mother's Name</label>
+                <input id="motherName" type="text" placeholder="Auto-filled...">
+            </div>
+            <div class="field">
+                <label>Class</label>
+                <input id="studentClass" type="text" placeholder="Auto-filled...">
+            </div>
+            <div class="field">
+                <label>Date of Birth</label>
+                <input id="dob" type="text" placeholder="Auto-filled...">
+            </div>
+        </div>
+    </section>
+
+    <section class="card no-print">
+        <h2 class="card-title">2 · TC Specific Details</h2>
+        <div class="grid">
+            <div class="field">
+                <label>TC Number</label>
+                <input id="tcNo" type="text" placeholder="e.g. TC-2026-001">
+            </div>
+            <div class="field">
+                <label>Date of Issue</label>
+                <input id="issueDate" type="date">
+            </div>
+            <div class="field">
+                <label>Date of Leaving</label>
+                <input id="leavingDate" type="date">
+            </div>
+            <div class="field">
+                <label>Reason for Leaving</label>
+                <input id="reason" type="text" value="Higher Studies" placeholder="e.g. Higher Studies">
+            </div>
+            <div class="field">
+                <label>Conduct</label>
+                <input id="conduct" type="text" value="Good" placeholder="e.g. Good">
+            </div>
+            <div class="field">
+                <label>Academic Year</label>
+                <input id="academicYear" type="text" placeholder="e.g. 2026">
+            </div>
+        </div>
+        <div class="field" style="margin-top:16px;">
+            <label>Remarks (Optional)</label>
+            <textarea id="remarks" rows="2" placeholder="Any additional remarks..."></textarea>
+        </div>
+        
+        <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-primary" id="btnGenerate"><i class="fas fa-eye"></i> Update Preview</button>
+            <button class="btn btn-outline" id="btnPrint"><i class="fas fa-print"></i> Print</button>
+            <button class="btn btn-success" id="btnDownload"><i class="fas fa-download"></i> Download PDF</button>
+        </div>
+    </section>
+
+    <!-- Preview Section -->
+    <section class="card no-print" style="padding:0; background:transparent; box-shadow:none; border:none;">
+        <div class="preview-wrapper">
+            <!-- This is the A4 Template -->
+            <div class="tc-container" id="tcPreview">
+                
+                <!-- NEW: Watermark -->
+                <img id="certWatermark" class="tc-watermark" src="" alt="" onerror="this.style.display='none'">
+
+                <div class="tc-header">
+                    <img id="certLogo" src="" alt="School Logo" onerror="this.style.display='none'">
+                    <h1 id="certSchoolName">YOUR SCHOOL NAME</h1>
+                    <p id="certSchoolAddress">School Address Here</p>
+                </div>
+                
+                <div class="tc-title">Transfer Certificate</div>
+
+                <div class="tc-body">
+                    <div class="tc-row">
+                        <div class="tc-label">TC Number</div>
+                        <div class="tc-value" id="c-tcNo">-</div>
+                    </div>
+                    <div class="tc-row">
+                        <div class="tc-label">Name of Student</div>
+                        <div class="tc-value" id="c-name">-</div>
+                    </div>
+                    <div class="tc-row">
+                        <div class="tc-label">Father's Name</div>
+                        <div class="tc-value" id="c-father">-</div>
+                    </div>
+                    <div class="tc-row">
+                        <div class="tc-label">Mother's Name</div>
+                        <div class="tc-value" id="c-mother">-</div>
+                    </div>
+                    <div class="tc-row">
+                        <div class="tc-label">Date of Birth</div>
+                        <div class="tc-value" id="c-dob">-</div>
+                    </div>
+                    <div class="tc-row">
+                        <div class="tc-label">Class Last Attended</div>
+                        <div class="tc-value" id="c-class">-</div>
+                    </div>
+                    <div class="tc-row">
+                        <div class="tc-label">Academic Year</div>
+                        <div class="tc-value" id="c-year">-</div>
+                    </div>
+                    <div class="tc-row">
+                        <div class="tc-label">Date of Leaving</div>
+                        <div class="tc-value" id="c-leavingDate">-</div>
+                    </div>
+                    <div class="tc-row">
+                        <div class="tc-label">Conduct</div>
+                        <div class="tc-value" id="c-conduct">-</div>
+                    </div>
+                    <div class="tc-row">
+                        <div class="tc-label">Reason for Leaving</div>
+                        <div class="tc-value" id="c-reason">-</div>
+                    </div>
+                    <div class="tc-row" id="row-remarks" style="display:none;">
+                        <div class="tc-label">Remarks</div>
+                        <div class="tc-value" id="c-remarks">-</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; font-size: 16px; line-height: 1.8; position: relative; z-index: 1;">
+                    This is to certify that the above student has successfully completed their studies at <span id="c-schoolName2">this institution</span> and their conduct was found to be <span id="c-conduct2">Good</span> during their stay.
+                    <br><br>
+                    We wish them the very best in all their future endeavors.
+                </div>
+
+                <div class="tc-footer">
+                    <!-- NEW: Verification QR -->
+                    <div class="qr-box">
+                        <div id="certQrContainer"></div>
+                        <p>Scan to Verify</p>
+                    </div>
+                    
+                    <div class="date-box">
+                        <p>Date: <span id="c-issueDate">-</span></p>
+                    </div>
+                    
+                    <div class="sign-box">
+                        <img id="certSign" src="" alt="Principal Sign" onerror="this.style.display='none'">
+                        <div class="line"></div>
+                        <p>Principal Signature</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+    getFirestore, doc, getDoc, getDocs, collection, query, where 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCOzfdIXBeh6drFhml4pOFEvPG8xV_Wjzw",
+    authDomain: "school-management-projec-9db7a.firebaseapp.com",
+    projectId: "school-management-projec-9db7a",
+    storageBucket: "school-management-projec-9db7a.firebasestorage.app",
+    messagingSenderId: "975842483778",
+    appId: "1:975842483778:web:d1708792ff56014f3317db"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const auth = getAuth(app);
+
+/* ---------- DOM ---------- */
+const $ = id => document.getElementById(id);
+const sidebar = $('sidebar'), overlay = $('overlay'), menuToggle = $('menuToggle');
+const authChip = $('authChip'), authText = $('authText');
+const toastEl = $('toast');
+
+let cachedSchool = { name: "Your School Name", address: "School Address", logo: "", sign: "" };
+let currentUserUid = null;
+let loadedStudents = []; 
+
+/* ---------- UI HELPERS ---------- */
+function toast(msg, type = '') {
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show ' + type;
+    setTimeout(() => { toastEl.className = 'toast ' + type; }, 3000);
+}
+
+function openSidebar()  { sidebar.classList.add('open');  overlay.classList.add('show'); }
+function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+menuToggle.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+overlay.addEventListener('click', closeSidebar);
+
+/* ---------- AUTH & BRANDING ---------- */
+onAuthStateChanged(auth, async user => {
+    if (user) {
+        currentUserUid = user.uid;
+        authChip.classList.add('on');
+        authText.textContent = 'Signed in';
+        await loadSchoolBranding(user.uid);
+    } else {
+        authChip.classList.remove('on');
+        authText.textContent = 'Not signed in';
+    }
+});
+
+async function loadSchoolBranding(uid) {
+    try {
+        const snap = await getDoc(doc(db, "school_settings", uid));
+        if (snap.exists()) {
+            const d = snap.data();
+            cachedSchool.name = d.schoolName || "Your School Name";
+            cachedSchool.address = d.schoolAddress || "School Address";
+            cachedSchool.logo = d.logo || "";
+            cachedSchool.sign = d.principalSignature || "";
+            
+            // Apply to preview
+            $('certSchoolName').textContent = cachedSchool.name;
+            $('certSchoolAddress').textContent = cachedSchool.address;
+            
+            if (cachedSchool.logo) {
+                // Header Logo
+                $('certLogo').src = cachedSchool.logo;
+                $('certLogo').style.display = 'inline-block';
+                // Watermark Logo
+                $('certWatermark').src = cachedSchool.logo;
+                $('certWatermark').style.display = 'block';
+            }
+            if (cachedSchool.sign) {
+                $('certSign').src = cachedSchool.sign;
+                $('certSign').style.display = 'inline-block';
+            }
+        }
+    } catch (e) {
+        console.warn("Branding fetch failed:", e);
+    }
+}
+
+/* ---------- CLASS & STUDENT DROPDOWNS ---------- */
+function normalizeClass(v) {
+    if (!v) return "";
+    return String(v).toLowerCase().replace(/\s+/g, "");
+}
+
+$('classSelect').addEventListener('change', async (e) => {
+    const selectedClass = e.target.value;
+    const studentSelect = $('studentSelect');
+    
+    studentSelect.innerHTML = '<option value="">Loading students...</option>';
+    studentSelect.disabled = true;
+
+    if (!selectedClass) {
+        studentSelect.innerHTML = '<option value="">— Select Class First —</option>';
+        return;
+    }
+
+    try {
+        const snap = await getDocs(query(collection(db, "students"), where("ownerId", "==", currentUserUid)));
+        
+        loadedStudents = [];
+        const targetNorm = normalizeClass(selectedClass);
+
+        snap.forEach(docSnap => {
+            const s = docSnap.data();
+            let sClass = normalizeClass(s.studentClass || s.class || "");
+            
+            if (sClass === 'kg1') sClass = 'nursery';
+            if (sClass === 'kg2') sClass = 'lkg';
+            
+            if (sClass === targetNorm) {
+                loadedStudents.push({ id: docSnap.id, ...s });
+            }
+        });
+
+        loadedStudents.sort((a, b) => {
+            const rA = parseInt(a.roll) || 999;
+            const rB = parseInt(b.roll) || 999;
+            return rA - rB || (a.name || "").localeCompare(b.name || "");
+        });
+
+        if (loadedStudents.length === 0) {
+            studentSelect.innerHTML = '<option value="">No students found in this class</option>';
+        } else {
+            studentSelect.innerHTML = '<option value="">— Select Student —</option>' + 
+                loadedStudents.map(s => `<option value="${s.id}">${s.name} (Roll: ${s.roll || 'N/A'})</option>`).join('');
+            studentSelect.disabled = false;
+        }
+    } catch (err) {
+        console.error(err);
+        toast("Error loading students: " + err.message, "error");
+        studentSelect.innerHTML = '<option value="">Error loading students</option>';
+    }
+});
+
+$('studentSelect').addEventListener('change', (e) => {
+    const studentId = e.target.value;
+    if (!studentId) return;
+
+    const studentData = loadedStudents.find(s => s.id === studentId);
+    if (studentData) {
+        fillFormData(studentData);
+        toast("Student details auto-filled ✓", "success");
+    }
+});
+
+/* ---------- SEARCH BY ID (Fallback) ---------- */
+$('btnSearch').addEventListener('click', async () => {
+    const id = $('searchId').value.trim();
+    if (!id) return toast("Please enter a Student ID", "error");
+
+    const btn = $('btnSearch');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+
+    try {
+        let sData = null;
+        const docRef = doc(db, "students", id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            sData = docSnap.data();
+            sData._id = docSnap.id; // keep track of ID for QR
+        } else {
+            const snap = await getDocs(query(collection(db, "students"), where("studentId", "==", id)));
+            if (!snap.empty) {
+                sData = snap.docs[0].data();
+                sData._id = snap.docs[0].id;
+            }
+        }
+
+        if (!sData) {
+            toast("Student not found", "error");
+            return;
+        }
+
+        fillFormData(sData);
+        toast("Student details loaded via ID ✓", "success");
+
+    } catch (err) {
+        console.error(err);
+        toast("Error searching: " + err.message, "error");
+    } finally {
+        btn.innerHTML = orig;
+        btn.disabled = false;
+    }
+});
+
+/* ---------- SHARED FORM FILL LOGIC ---------- */
+function fillFormData(sData) {
+    $('studentName').value = sData.name || '';
+    $('fatherName').value = sData.fatherName || sData.father || '';
+    $('motherName').value = sData.motherName || sData.mother || '';
+    $('studentClass').value = sData.studentClass || sData.class || '';
+    $('dob').value = sData.dob || sData.dateOfBirth || '';
+    $('academicYear').value = sData.academicYear || '';
+    
+    // Save student ID to DOM for QR generation
+    if (sData.studentId) $('searchId').value = sData.studentId;
+    else if (sData._id) $('searchId').value = sData._id;
+    else if (sData.id) $('searchId').value = sData.id;
+
+    updatePreview();
+}
+
+/* ---------- UPDATE PREVIEW & QR ---------- */
+function updatePreview() {
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '-';
+        const d = new Date(dateStr);
+        if (isNaN(d)) return dateStr;
+        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+    };
+
+    const tcNo = $('tcNo').value || '-';
+    const studentName = $('studentName').value || '-';
+    const studentId = $('searchId').value.trim() || 'N/A';
+
+    $('c-tcNo').textContent = tcNo;
+    $('c-name').textContent = studentName;
+    $('c-father').textContent = $('fatherName').value || '-';
+    $('c-mother').textContent = $('motherName').value || '-';
+    $('c-dob').textContent = formatDate($('dob').value);
+    $('c-class').textContent = $('studentClass').value || '-';
+    $('c-year').textContent = $('academicYear').value || '-';
+    $('c-leavingDate').textContent = formatDate($('leavingDate').value);
+    $('c-conduct').textContent = $('conduct').value || 'Good';
+    $('c-reason').textContent = $('reason').value || 'Higher Studies';
+    $('c-issueDate').textContent = formatDate($('issueDate').value || new Date().toISOString());
+    
+    $('c-schoolName2').textContent = cachedSchool.name;
+    $('c-conduct2').textContent = $('conduct').value || 'Good';
+
+    const remarks = $('remarks').value.trim();
+    if (remarks) {
+        $('row-remarks').style.display = 'flex';
+        $('c-remarks').textContent = remarks;
+    } else {
+        $('row-remarks').style.display = 'none';
+    }
+
+    // Generate QR Code
+    const qrContainer = $('certQrContainer');
+    qrContainer.innerHTML = ''; // Clear previous
+    if (tcNo && tcNo !== '-') {
+        const qrData = `TC No: ${tcNo}\nStudent ID: ${studentId}\nName: ${studentName}`;
+        new QRCode(qrContainer, {
+            text: qrData,
+            width: 80,
+            height: 80,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    }
+}
+
+$('btnGenerate').addEventListener('click', () => {
+    updatePreview();
+    toast("Preview updated", "success");
+    document.querySelector('.preview-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+/* ---------- PRINT & DOWNLOAD ---------- */
+$('btnPrint').addEventListener('click', () => {
+    window.print();
+});
+
+$('btnDownload').addEventListener('click', () => {
+    const btn = $('btnDownload');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    btn.disabled = true;
+
+    const element = $('tcPreview');
+    
+    const opt = {
+        margin: 0,
+        filename: `TC_${$('studentName').value.replace(/\s+/g, '_') || 'Student'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            letterRendering: true,
+            scrollX: 0,
+            scrollY: 0
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        toast("PDF Downloaded ✓", "success");
+    }).catch(err => {
+        console.error(err);
+        toast("Failed to download PDF", "error");
+    }).finally(() => {
+        btn.innerHTML = orig;
+        btn.disabled = false;
+    });
+});
+
+/* ---------- INIT ---------- */
+(function init() {
+    const today = new Date().toISOString().split('T')[0];
+    $('issueDate').value = today;
+    $('leavingDate').value = today;
+    $('tcNo').value = `TC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    updatePreview();
+})();
+
+$('searchId').addEventListener('keypress', e => { if (e.key === 'Enter') $('btnSearch').click(); });
+</script>
+</body>
+</html>

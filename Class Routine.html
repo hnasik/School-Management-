@@ -1,0 +1,1051 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Routine | Admin Panel</title>
+<style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+        --purple-dark:#4a148c; --purple-mid:#7b1fa2; --purple-light:#9c27b0;
+        --purple-soft:#f3ecff; --text:#2c2c3e; --muted:#7a7a92; --border:#e6e1f5;
+    }
+    body{font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;background:#eef0f7;color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+    /* ============ SIDEBAR ============ */
+    .sidebar{position:fixed;top:0;left:0;width:265px;height:100vh;background:linear-gradient(180deg,#4a148c,#7b1fa2,#9c27b0);color:#fff;padding:24px 16px;display:flex;flex-direction:column;overflow-y:auto;z-index:100;box-shadow:4px 0 26px rgba(74,20,140,.28);transition:transform .32s ease;}
+    .sidebar::-webkit-scrollbar{width:6px;}
+    .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:6px;}
+    .brand{display:flex;align-items:center;gap:12px;padding:6px 10px 22px;border-bottom:1px solid rgba(255,255,255,.16);margin-bottom:16px;}
+    .brand-icon{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;backdrop-filter:blur(6px);}
+    .brand h2{font-size:16px;font-weight:700;letter-spacing:.3px;}
+    .brand span{font-size:11px;opacity:.75;letter-spacing:.6px;text-transform:uppercase;}
+    .nav{display:flex;flex-direction:column;gap:4px;flex:1;}
+    .nav a{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;color:rgba(255,255,255,.85);text-decoration:none;font-size:14px;font-weight:500;transition:all .22s ease;white-space:nowrap;}
+    .nav a:hover{background:rgba(255,255,255,.14);color:#fff;transform:translateX(3px);}
+    .nav a.active{background:rgba(255,255,255,.95);color:var(--purple-dark);font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.18);}
+    .nav a i{font-style:normal;font-size:16px;width:20px;text-align:center;}
+    .sidebar-footer{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.16);font-size:11px;opacity:.65;text-align:center;letter-spacing:.5px;}
+
+    /* ============ MAIN ============ */
+    .main{margin-left:265px;padding:28px 32px 70px;min-height:100vh;}
+    .topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px;}
+    .topbar h1{font-size:26px;font-weight:700;color:var(--purple-dark);letter-spacing:.2px;}
+    .topbar p{font-size:13.5px;color:var(--muted);margin-top:5px;}
+    .auth-chip{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.95);border-radius:999px;padding:8px 16px;font-size:12.5px;font-weight:600;color:var(--muted);box-shadow:0 6px 18px rgba(74,20,140,.10);border:1px solid rgba(255,255,255,.7);}
+    .auth-chip .dot{width:9px;height:9px;border-radius:50%;background:#bdbdbd;transition:background .3s;}
+    .auth-chip.on .dot{background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.16);}
+    .auth-chip.on{color:#166534;}
+
+    /* ============ CARDS ============ */
+    .card{background:rgba(255,255,255,.95);backdrop-filter:blur(14px);border-radius:16px;padding:22px 24px;margin-bottom:22px;border:1px solid rgba(255,255,255,.75);box-shadow:0 10px 34px rgba(74,20,140,.09);}
+    .card-title{font-size:15px;font-weight:700;color:var(--purple-dark);letter-spacing:.3px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+    .card-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
+    .card-head .card-title{margin-bottom:0;}
+
+    /* ============ FORM ============ */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;align-items:end;}
+    .field{display:flex;flex-direction:column;gap:7px;}
+    .field label{font-size:12.5px;font-weight:600;color:#5b5b72;letter-spacing:.3px;}
+    .field input,.field select{width:100%;padding:11px 14px;font-size:14px;font-family:inherit;color:var(--text);background:#fbfaff;border:1.5px solid var(--border);border-radius:12px;outline:none;transition:all .2s ease;}
+    .field input:focus,.field select:focus{border-color:var(--purple-light);background:#fff;box-shadow:0 0 0 4px rgba(156,39,176,.10);}
+    .field input::placeholder{color:#a9a7bd;}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+
+    /* ============ BUTTONS ============ */
+    .btn{font-family:inherit;font-size:13.5px;font-weight:600;padding:11px 18px;border-radius:12px;border:none;cursor:pointer;transition:all .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;letter-spacing:.2px;}
+    .btn:active{transform:scale(.97);}
+    .btn:disabled{opacity:.6;cursor:not-allowed;}
+    .btn-primary{background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff;box-shadow:0 8px 20px rgba(123,31,162,.30);}
+    .btn-primary:hover:not(:disabled){background:linear-gradient(135deg,#6a1b9a,#8e24aa);box-shadow:0 10px 26px rgba(123,31,162,.40);transform:translateY(-1px);}
+    .btn-outline{background:#fff;color:var(--purple-dark);border:1.5px solid var(--border);box-shadow:0 4px 14px rgba(74,20,140,.06);}
+    .btn-outline:hover:not(:disabled){border-color:var(--purple-light);background:var(--purple-soft);}
+    .btn-ghost{background:#f7f4ff;color:var(--purple-dark);border:1.5px solid var(--border);padding:9px 14px;font-size:12.5px;}
+    .btn-ghost:hover{background:var(--purple-soft);border-color:#d6c8f0;}
+    .btn.danger,.btn-ghost.danger{color:#c62828;border-color:#f3d4d4;background:#fff5f5;}
+    .btn.danger:hover,.btn-ghost.danger:hover{background:#ffecec;border-color:#e9b8b8;}
+    .icon-btn{width:22px;height:22px;border:none;border-radius:6px;background:rgba(0,0,0,.05);color:#c62828;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;}
+    .icon-btn:hover{background:#ffe0e0;}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .hint{font-size:12.5px;color:var(--muted);margin:10px 0 16px;line-height:1.6;}
+    .hint b{color:var(--purple-mid);}
+
+    /* ============ SUB SECTION ============ */
+    .sub-section{margin-top:20px;padding-top:18px;border-top:1px dashed var(--border);}
+    .sub-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+    .sub-title{font-size:13.5px;font-weight:700;color:var(--purple-mid);letter-spacing:.3px;}
+    .fields-list{display:flex;flex-wrap:wrap;gap:10px;}
+    .field-chip{display:flex;align-items:center;gap:6px;background:#f7f4ff;border:1.5px solid var(--border);border-radius:12px;padding:6px 8px 6px 12px;}
+    .field-chip input{border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--purple-dark);outline:none;width:110px;padding:4px 0;}
+    .field-chip input:focus{color:var(--purple-light);}
+
+    /* ============ TABLE ============ */
+    .table-wrap{overflow:auto;border-radius:16px;border:1px solid var(--border);background:#fff;box-shadow:inset 0 1px 3px rgba(74,20,140,.04);max-height:78vh;}
+    table{border-collapse:separate;border-spacing:0;width:100%;min-width:980px;}
+    th,td{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:0;vertical-align:top;font-size:13px;}
+
+    thead th{background:linear-gradient(135deg,#4a148c,#7b1fa2);color:#fff;font-weight:600;text-align:center;position:sticky;top:0;z-index:3;box-shadow:0 3px 10px rgba(74,20,140,.16);min-width:150px;padding:8px;}
+    thead th.break-head{background:linear-gradient(135deg,#b8860b,#d4a017);min-width:88px;}
+    thead th.corner{position:sticky;left:0;z-index:5;background:linear-gradient(135deg,#38006b,#4a148c);min-width:120px;}
+    tbody th.row-head{background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff;font-weight:600;text-align:center;position:sticky;left:0;z-index:2;min-width:110px;padding:8px;}
+    thead th:last-child,td:last-child{border-right:none;}
+    tr:last-child td,tr:last-child th{border-bottom:none;}
+
+    .col-top{display:flex;align-items:center;gap:4px;margin-bottom:5px;}
+    .col-label{flex:1;min-width:0;border:none;background:rgba(255,255,255,.18);border-radius:6px;padding:5px 7px;color:#fff;font-family:inherit;font-size:12.5px;font-weight:700;outline:none;text-align:center;}
+    .col-label::placeholder{color:rgba(255,255,255,.6);}
+    .col-label:focus{background:rgba(255,255,255,.32);}
+    .col-time{width:100%;border:none;background:rgba(255,255,255,.12);border-radius:6px;padding:4px 7px;color:rgba(255,255,255,.95);font-family:inherit;font-size:11px;outline:none;text-align:center;}
+    .col-time::placeholder{color:rgba(255,255,255,.55);}
+    .col-time:focus{background:rgba(255,255,255,.28);}
+    .insert-break-btn{margin-top:6px;width:100%;border:1px dashed rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:6px;padding:3px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:.3px;transition:all .2s;}
+    .insert-break-btn:hover{background:rgba(255,255,255,.18);border-style:solid;}
+
+    .row-head .row-label{width:100%;border:none;background:rgba(255,255,255,.18);border-radius:6px;padding:5px 7px;color:#fff;font-family:inherit;font-size:12.5px;font-weight:700;outline:none;text-align:center;margin-bottom:5px;}
+    .row-label::placeholder{color:rgba(255,255,255,.6);}
+    .row-label:focus{background:rgba(255,255,255,.32);}
+    .row-head .row-del{margin:0 auto;display:flex;}
+
+    td[data-col-id]{padding:8px 9px;}
+    .cell-field{margin-bottom:6px;}
+    .cell-field:last-child{margin-bottom:0;}
+    .cell-field label{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#a99ec9;margin-bottom:1px;cursor:default;}
+    .cell-field input{width:100%;border:none;background:transparent;padding:2px 0;font-size:12.5px;font-family:inherit;color:var(--text);border-bottom:1px dashed transparent;outline:none;transition:border-color .15s;}
+    .cell-field input::placeholder{color:#cfcbe0;font-style:italic;}
+    .cell-field input:focus{border-bottom-color:var(--purple-light);background:rgba(156,39,176,.04);}
+
+    .break-cell{background:linear-gradient(180deg,#fff9e6,#fff3cc);border-left:2px dashed #d4a017;border-right:2px dashed #d4a017;}
+    .break-band{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:100%;padding:14px 8px;text-align:center;}
+    .break-icon{font-size:22px;}
+    .break-label{font-size:12.5px;font-weight:700;color:#8a6d0b;letter-spacing:.4px;writing-mode:vertical-rl;transform:rotate(180deg);max-height:70%;}
+    .break-time{font-size:10.5px;font-weight:600;color:#a8850f;writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.3px;}
+
+    /* ============ TOAST ============ */
+    .toast{position:fixed;bottom:26px;right:26px;background:#32304a;color:#fff;padding:14px 22px;border-radius:14px;font-size:13.5px;font-weight:600;box-shadow:0 14px 40px rgba(0,0,0,.28);opacity:0;transform:translateY(20px);pointer-events:none;transition:all .3s cubic-bezier(.2,.8,.3,1);z-index:999;max-width:340px;}
+    .toast.show{opacity:1;transform:translateY(0);}
+    .toast.success{background:linear-gradient(135deg,#1b8a4a,#22c55e);}
+    .toast.error{background:linear-gradient(135deg,#b71c1c,#e53935);}
+
+    .class-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+    .class-chip{background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff;font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:999px;letter-spacing:.3px;box-shadow:0 4px 12px rgba(123,31,162,.28);}
+
+    /* ============ MOBILE ============ */
+    .menu-toggle{display:none;position:fixed;top:16px;left:16px;width:46px;height:46px;border:none;border-radius:13px;background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff;font-size:20px;cursor:pointer;z-index:200;box-shadow:0 8px 22px rgba(74,20,140,.35);align-items:center;justify-content:center;}
+    .overlay{display:none;position:fixed;inset:0;background:rgba(30,10,50,.45);backdrop-filter:blur(2px);z-index:99;}
+    .overlay.show{display:block;}
+    @media (max-width:960px){
+        .sidebar{transform:translateX(-100%);}
+        .sidebar.open{transform:translateX(0);}
+        .main{margin-left:0;padding:78px 16px 60px;}
+        .menu-toggle{display:flex;}
+        .topbar h1{font-size:21px;}
+        .card{padding:18px;}
+    }
+
+    /* ============ PRINT ENGINE ============ */
+    .print-container{display:none;}
+
+    @media print{
+        @page{margin:10mm;size:A4 landscape;}
+        body{background:#fff;color:#000;}
+        .sidebar,.menu-toggle,.overlay,.no-print,.toast{display:none !important;}
+        .main{margin:0;padding:0;}
+        .card{box-shadow:none !important;border:none !important;background:#fff !important;padding:0 !important;margin:0 !important;backdrop-filter:none !important;}
+        .table-wrap{display:none !important;}
+        .print-container{display:block !important;}
+
+        .print-page{display:block;page-break-after:always;break-after:page;}
+        .print-page:last-child{page-break-after:auto;break-after:auto;}
+
+        .print-page-head{text-align:center;margin-bottom:10px;}
+        .print-page-head h2{font-size:17px;color:#4a148c;letter-spacing:.4px;margin-bottom:2px;}
+        .print-page-head .print-part{font-size:11.5px;color:#666;font-weight:600;letter-spacing:.3px;}
+
+        table.routine-print{border-collapse:collapse;width:100%;table-layout:fixed;}
+        table.routine-print th,
+        table.routine-print td{
+            border:1px solid #999;
+            padding:6px 7px;
+            font-size:10.5px;
+            vertical-align:top;
+            word-break:break-word;
+        }
+        table.routine-print thead th{
+            background:#4a148c !important;
+            color:#fff !important;
+            -webkit-print-color-adjust:exact;
+            print-color-adjust:exact;
+            text-align:center;
+            font-weight:700;
+            font-size:11px;
+        }
+        table.routine-print thead th.break-head{background:#b8860b !important;}
+        table.routine-print thead th.corner{background:#38006b !important;}
+        table.routine-print tbody th.row-head{
+            background:#7b1fa2 !important;
+            color:#fff !important;
+            -webkit-print-color-adjust:exact;
+            print-color-adjust:exact;
+            text-align:center;
+            font-weight:700;
+            font-size:11px;
+        }
+        table.routine-print td.break-cell{
+            background:#fff8e1 !important;
+            -webkit-print-color-adjust:exact;
+            print-color-adjust:exact;
+            text-align:center;
+            vertical-align:middle;
+        }
+        .print-time{display:block;font-size:9px;font-weight:500;opacity:.85;margin-top:2px;}
+
+        .pf{margin-bottom:4px;}
+        .pf:last-child{margin-bottom:0;}
+        .pf-label{display:block;font-size:7.5px;text-transform:uppercase;letter-spacing:.4px;color:#8b8b9c;font-weight:700;line-height:1.2;}
+        .pf-value{display:block;font-size:10.5px;font-weight:600;color:#2c2c3e;line-height:1.3;margin-top:1px;}
+        .pf-value.empty{color:#c3bfd6;font-style:italic;font-weight:500;}
+
+        .pbreak{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:100%;padding:8px 4px;}
+        .pbreak-name,.pbreak-time{writing-mode:vertical-rl;transform:rotate(180deg);font-weight:700;color:#8a6d0b;font-size:10px;letter-spacing:.4px;}
+        .pbreak-time{font-size:9px;font-weight:600;color:#a8850f;}
+
+        tr{page-break-inside:avoid;break-inside:avoid;}
+    }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+<button class="menu-toggle" id="menuToggle">☰</button>
+
+<aside class="sidebar" id="sidebar">
+    <div class="brand">
+        <div class="brand-icon">🎓</div>
+        <div><h2>School Admin</h2><span>Management Panel</span></div>
+    </div>
+    <nav class="nav">
+        <a href="index.html"><i>📊</i><span>Dashboard</span></a>
+       
+       
+        <a href="class-routine.html" class="active"><i>🗓️</i><span>Class Routine</span></a>
+    </nav>
+    <div class="sidebar-footer">Class Routine · v2.1</div>
+</aside>
+
+<main class="main">
+
+    <header class="topbar">
+        <div>
+            <h1>Class Routine Builder</h1>
+            <p>Build the routine, add period times &amp; breaks, then auto-generate class-wise routines.</p>
+        </div>
+        <div class="auth-chip" id="authChip"><span class="dot"></span><span id="authText">Checking sign-in…</span></div>
+    </header>
+
+    <!-- ===== SETUP ===== -->
+    <section class="card no-print">
+        <h2 class="card-title">1 · Setup</h2>
+        <div class="grid">
+            <div class="field">
+                <label for="routineTitle">Routine Title</label>
+                <input id="routineTitle" type="text" placeholder="e.g. Master Routine 2026">
+            </div>
+            <div class="field">
+                <label for="classFieldSelect">Which field identifies the class?</label>
+                <select id="classFieldSelect"></select>
+            </div>
+            <div class="field">
+                <label for="printSplitSelect">Print · Periods per page</label>
+                <select id="printSplitSelect">
+                    <option value="4">4 periods / page</option>
+                    <option value="5">5 periods / page</option>
+                    <option value="6" selected>6 periods / page</option>
+                    <option value="7">7 periods / page</option>
+                    <option value="8">8 periods / page</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="sub-section">
+            <div class="sub-head">
+                <h3 class="sub-title">Cell Fields (shown inside every cell)</h3>
+                <button class="btn btn-ghost" id="btnAddField">＋ Add Field</button>
+            </div>
+            <div class="fields-list" id="fieldsList"></div>
+        </div>
+
+        <div class="btn-row" style="margin-top:20px;">
+            <button class="btn btn-primary" id="btnAddPeriod">＋ Add Period</button>
+            <button class="btn btn-outline" id="btnAddBreak">＋ Add Break</button>
+            <button class="btn btn-outline" id="btnAddRow">＋ Add Row</button>
+            <button class="btn btn-outline" id="btnReset">↺ Reset to Default</button>
+        </div>
+    </section>
+
+    <!-- ===== TABLE ===== -->
+    <section class="card">
+        <div class="card-head">
+            <h2 class="card-title">2 · Routine Table</h2>
+            <div class="toolbar no-print">
+                <button class="btn btn-ghost" id="btnClear">Clear Data</button>
+                <button class="btn btn-ghost" id="btnPrint">🖨 Print</button>
+            </div>
+        </div>
+        <p class="hint no-print">
+            Type inside the header for the period name &amp; time. Click <b>＋ Break</b> under any period to insert a break column after it.
+            Every cell has the fields you defined above — one value per field. Fill the <b>Class</b> field so class-wise routines can be auto-generated.
+        </p>
+        <p class="hint no-print" id="printPreviewNote"></p>
+        <div class="table-wrap" id="tableWrap"></div>
+    </section>
+
+    <!-- ===== SAVE & GENERATE ===== -->
+    <section class="card no-print">
+        <h2 class="card-title">3 · Save &amp; Auto-Generate</h2>
+        <div class="grid">
+            <div class="field">
+                <label for="savedSelect">Saved Master Routines</label>
+                <select id="savedSelect"><option value="">Loading…</option></select>
+            </div>
+            <div class="field">
+                <label>&nbsp;</label>
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="btnSave">💾 Save &amp; Generate</button>
+                    <button class="btn btn-outline" id="btnLoad">📂 Load</button>
+                    <button class="btn btn-outline danger" id="btnDelete">🗑 Delete</button>
+                </div>
+            </div>
+        </div>
+        <p class="hint">
+            Saving the master routine <b>also generates one routine document per class</b> found in the “Class” field.
+            Parents can view them in <b>parent-routine.html</b> by entering their child's Student ID.
+        </p>
+    </section>
+
+    <!-- ===== GENERATED ===== -->
+    <section class="card no-print" id="generatedCard" style="display:none;">
+        <h2 class="card-title">✓ Class Routines Generated</h2>
+        <div class="class-chips" id="generatedList"></div>
+        <p class="hint" style="margin-bottom:0;">These are now stored in <b>class_routines</b> and readable from the parent portal.</p>
+    </section>
+
+</main>
+
+<!-- Print-only container -->
+<div class="print-container" id="printContainer"></div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+    getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs,
+    deleteDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCOzfdIXBeh6drFhml4pOFEvPG8xV_Wjzw",
+    authDomain: "school-management-projec-9db7a.firebaseapp.com",
+    projectId: "school-management-projec-9db7a",
+    storageBucket: "school-management-projec-9db7a.firebasestorage.app",
+    messagingSenderId: "975842483778",
+    appId: "1:975842483778:web:d1708792ff56014f3317db"
+};
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+/* ---------- DOM ---------- */
+const $ = id => document.getElementById(id);
+const sidebar = $('sidebar'), overlay = $('overlay'), menuToggle = $('menuToggle');
+const titleEl = $('routineTitle');
+const classFieldSelect = $('classFieldSelect');
+const printSplitSelect = $('printSplitSelect');
+const fieldsList = $('fieldsList');
+const tableWrap = $('tableWrap');
+const savedSelect = $('savedSelect');
+const toastEl = $('toast');
+const authChip = $('authChip'), authText = $('authText');
+const generatedCard = $('generatedCard'), generatedList = $('generatedList');
+const printContainer = $('printContainer');
+const printPreviewNote = $('printPreviewNote');
+
+const btnAddField = $('btnAddField');
+const btnAddPeriod = $('btnAddPeriod');
+const btnAddBreak = $('btnAddBreak');
+const btnAddRow = $('btnAddRow');
+const btnReset = $('btnReset');
+const btnClear = $('btnClear');
+const btnPrint = $('btnPrint');
+const btnSave = $('btnSave');
+const btnLoad = $('btnLoad');
+const btnDelete = $('btnDelete');
+
+/* ---------- CONSTANTS ---------- */
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MAX_ROWS = 20, MAX_COLS = 15;
+const DRAFT_KEY = 'classRoutineDraft_v2';
+
+/* ---------- IMPORTANT: uidCounter MUST be declared BEFORE emptyState() runs ---------- */
+let uidCounter = 0;
+function uid(prefix='id'){ return `${prefix}_${Date.now().toString(36)}_${(++uidCounter).toString(36)}`; }
+
+/* ---------- STATE ---------- */
+let currentDocId = null;
+let savedRoutines = [];
+let draftTimer = null;
+
+function emptyState(){
+    const fields = [
+        { id: uid('fld'), label: 'Subject' },
+        { id: uid('fld'), label: 'Class'   },
+        { id: uid('fld'), label: 'Teacher' }
+    ];
+    const columns = [];
+    for (let i = 1; i <= 6; i++) {
+        columns.push({ id: uid('col'), type: 'period', label: 'Period ' + i, time: '' });
+    }
+    columns.splice(3, 0, { id: uid('col'), type: 'break', label: 'Tiffin Break', time: '' });
+
+    const rows = ['Sunday','Monday','Tuesday','Wednesday','Thursday'].map(d => ({ id: uid('row'), label: d }));
+
+    return {
+        title: '',
+        fields,
+        columns,
+        rows,
+        cells: {},
+        classFieldId: fields[1].id,
+        printSplit: 6
+    };
+}
+
+let state = emptyState();
+
+/* ---------- HELPERS ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const classDocId = name => String(name).trim().toLowerCase().replace(/[\/\\#?\[\]*]/g,'-').replace(/\s+/g,'_').slice(0,120);
+
+let toastTimer = null;
+function toast(msg, type=''){
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>{ toastEl.className = 'toast ' + type; }, 3200);
+}
+
+function getCell(rowId, colId, fieldId){
+    return state.cells?.[rowId]?.[colId]?.[fieldId] ?? '';
+}
+function setCell(rowId, colId, fieldId, value){
+    if (!state.cells[rowId]) state.cells[rowId] = {};
+    if (!state.cells[rowId][colId]) state.cells[rowId][colId] = {};
+    state.cells[rowId][colId][fieldId] = value;
+}
+
+/* ================= FIELDS ================= */
+function renderFieldsList(){
+    fieldsList.innerHTML = state.fields.map(f => `
+        <div class="field-chip">
+            <input class="field-label-input" data-field-id="${f.id}" value="${esc(f.label)}" placeholder="Field name">
+            <button class="icon-btn" data-field-id="${f.id}" title="Remove field">×</button>
+        </div>
+    `).join('');
+
+    fieldsList.querySelectorAll('.field-label-input').forEach(inp => {
+        inp.addEventListener('input', e => {
+            const f = state.fields.find(x => x.id === e.target.dataset.fieldId);
+            if (!f) return;
+            f.label = e.target.value;
+            tableWrap.querySelectorAll(`label[data-field-id="${f.id}"]`).forEach(lbl => {
+                lbl.textContent = f.label || 'Field';
+            });
+            renderClassFieldSelect();
+            scheduleDraftSave();
+        });
+    });
+
+    fieldsList.querySelectorAll('.icon-btn').forEach(btn => {
+        btn.addEventListener('click', () => removeField(btn.dataset.fieldId));
+    });
+}
+
+function addField(){
+    const n = state.fields.length;
+    state.fields.push({ id: uid('fld'), label: 'Field ' + (n + 1) });
+    renderFieldsList();
+    renderTable();
+    renderClassFieldSelect();
+    scheduleDraftSave();
+}
+
+function removeField(fieldId){
+    if (state.fields.length <= 1) { toast('At least one field is required.', 'error'); return; }
+    const idx = state.fields.findIndex(f => f.id === fieldId);
+    if (idx === -1) return;
+    state.fields.splice(idx, 1);
+    Object.values(state.cells || {}).forEach(rowMap => {
+        Object.values(rowMap).forEach(cell => { delete cell[fieldId]; });
+    });
+    if (state.classFieldId === fieldId) state.classFieldId = state.fields[0].id;
+    renderFieldsList();
+    renderClassFieldSelect();
+    renderTable();
+    scheduleDraftSave();
+}
+
+function renderClassFieldSelect(){
+    const current = classFieldSelect.value || state.classFieldId;
+    classFieldSelect.innerHTML = state.fields.map(f =>
+        `<option value="${f.id}">${esc(f.label)}</option>`
+    ).join('');
+    if (current && state.fields.some(f => f.id === current)) {
+        classFieldSelect.value = current;
+    } else {
+        const guess = state.fields.find(f => /class/i.test(f.label));
+        classFieldSelect.value = (guess || state.fields[0]).id;
+    }
+    state.classFieldId = classFieldSelect.value;
+}
+
+/* ================= TABLE ================= */
+function renderTable(){
+    if (!state.columns.length || !state.rows.length) { tableWrap.innerHTML = ''; updatePrintPreviewNote(); return; }
+
+    let html = '<table id="routineTable">';
+
+    html += '<thead><tr>';
+    html += '<th class="corner">Day / Period</th>';
+
+    state.columns.forEach(col => {
+        if (col.type === 'break') {
+            html += `<th class="break-head" data-col-id="${col.id}">
+                <div class="col-top">
+                    <input class="col-label" data-col-id="${col.id}" value="${esc(col.label)}" placeholder="Break name">
+                    <button class="icon-btn col-del" data-col-id="${col.id}" title="Remove">×</button>
+                </div>
+                <input class="col-time" data-col-id="${col.id}" value="${esc(col.time)}" placeholder="Time">
+            </th>`;
+        } else {
+            html += `<th data-col-id="${col.id}">
+                <div class="col-top">
+                    <input class="col-label" data-col-id="${col.id}" value="${esc(col.label)}" placeholder="Period name">
+                    <button class="icon-btn col-del" data-col-id="${col.id}" title="Remove">×</button>
+                </div>
+                <input class="col-time" data-col-id="${col.id}" value="${esc(col.time)}" placeholder="Time">
+                <button class="insert-break-btn" data-after-col-id="${col.id}">＋ Break</button>
+            </th>`;
+        }
+    });
+    html += '</tr></thead>';
+
+    html += '<tbody>';
+    state.rows.forEach((row, ri) => {
+        html += '<tr>';
+        html += `<th class="row-head">
+            <input class="row-label" data-row-id="${row.id}" value="${esc(row.label)}" placeholder="Day">
+            <button class="icon-btn row-del" data-row-id="${row.id}" title="Remove row">×</button>
+        </th>`;
+
+        state.columns.forEach(col => {
+            if (col.type === 'break') {
+                if (ri === 0) {
+                    html += `<td class="break-cell" rowspan="${state.rows.length}" data-col-id="${col.id}">
+                        <div class="break-band">
+                            <span class="break-icon">☕</span>
+                            <span class="break-label">${esc(col.label || 'Break')}</span>
+                            <span class="break-time">${esc(col.time || '')}</span>
+                        </div>
+                    </td>`;
+                }
+            } else {
+                html += `<td data-row-id="${row.id}" data-col-id="${col.id}">`;
+                state.fields.forEach(f => {
+                    const val = getCell(row.id, col.id, f.id);
+                    html += `<div class="cell-field">
+                        <label data-field-id="${f.id}">${esc(f.label)}</label>
+                        <input data-row-id="${row.id}" data-col-id="${col.id}" data-field-id="${f.id}"
+                               value="${esc(val)}" placeholder="…">
+                    </div>`;
+                });
+                html += '</td>';
+            }
+        });
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+
+    tableWrap.innerHTML = html;
+    bindTableEvents();
+    updatePrintPreviewNote();
+}
+
+function bindTableEvents(){
+    tableWrap.querySelectorAll('.col-label').forEach(inp => {
+        inp.addEventListener('input', e => {
+            const col = state.columns.find(c => c.id === e.target.dataset.colId);
+            if (!col) return;
+            col.label = e.target.value;
+            if (col.type === 'break') updateBreakBand(col.id);
+            scheduleDraftSave();
+        });
+    });
+    tableWrap.querySelectorAll('.col-time').forEach(inp => {
+        inp.addEventListener('input', e => {
+            const col = state.columns.find(c => c.id === e.target.dataset.colId);
+            if (!col) return;
+            col.time = e.target.value;
+            if (col.type === 'break') updateBreakBand(col.id);
+            scheduleDraftSave();
+        });
+    });
+    tableWrap.querySelectorAll('.col-del').forEach(btn => {
+        btn.addEventListener('click', () => removeColumn(btn.dataset.colId));
+    });
+    tableWrap.querySelectorAll('.insert-break-btn').forEach(btn => {
+        btn.addEventListener('click', () => insertBreakAfter(btn.dataset.afterColId));
+    });
+    tableWrap.querySelectorAll('.row-label').forEach(inp => {
+        inp.addEventListener('input', e => {
+            const row = state.rows.find(r => r.id === e.target.dataset.rowId);
+            if (row) { row.label = e.target.value; scheduleDraftSave(); }
+        });
+    });
+    tableWrap.querySelectorAll('.row-del').forEach(btn => {
+        btn.addEventListener('click', () => removeRow(btn.dataset.rowId));
+    });
+    tableWrap.querySelectorAll('td[data-row-id] input[data-field-id]').forEach(inp => {
+        inp.addEventListener('input', e => {
+            const { rowId, colId, fieldId } = e.target.dataset;
+            setCell(rowId, colId, fieldId, e.target.value);
+            scheduleDraftSave();
+        });
+    });
+}
+
+function updateBreakBand(colId){
+    const col = state.columns.find(c => c.id === colId);
+    if (!col) return;
+    const cell = tableWrap.querySelector(`.break-cell[data-col-id="${colId}"]`);
+    if (!cell) return;
+    cell.querySelector('.break-label').textContent = col.label || 'Break';
+    cell.querySelector('.break-time').textContent  = col.time  || '';
+}
+
+/* ================= STRUCTURE OPS ================= */
+function addPeriod(){
+    const n = state.columns.filter(c => c.type === 'period').length + 1;
+    state.columns.push({ id: uid('col'), type: 'period', label: 'Period ' + n, time: '' });
+    renderTable(); scheduleDraftSave();
+}
+function addBreakColumn(){
+    state.columns.push({ id: uid('col'), type: 'break', label: 'Break', time: '' });
+    renderTable(); scheduleDraftSave();
+}
+function insertBreakAfter(afterColId){
+    const idx = state.columns.findIndex(c => c.id === afterColId);
+    if (idx === -1) return;
+    state.columns.splice(idx + 1, 0, { id: uid('col'), type: 'break', label: 'Break', time: '' });
+    renderTable(); scheduleDraftSave();
+}
+function removeColumn(colId){
+    if (state.columns.length <= 1) { toast('At least one column is required.', 'error'); return; }
+    const idx = state.columns.findIndex(c => c.id === colId);
+    if (idx === -1) return;
+    state.columns.splice(idx, 1);
+    Object.values(state.cells || {}).forEach(rowMap => { delete rowMap[colId]; });
+    renderTable(); scheduleDraftSave();
+}
+function addRow(){
+    if (state.rows.length >= MAX_ROWS) { toast(`Max ${MAX_ROWS} rows.`, 'error'); return; }
+    const n = state.rows.length;
+    const label = DAY_NAMES[n] || ('Row ' + (n + 1));
+    state.rows.push({ id: uid('row'), label });
+    renderTable(); scheduleDraftSave();
+}
+function removeRow(rowId){
+    if (state.rows.length <= 1) { toast('At least one row is required.', 'error'); return; }
+    const idx = state.rows.findIndex(r => r.id === rowId);
+    if (idx === -1) return;
+    state.rows.splice(idx, 1);
+    delete state.cells[rowId];
+    renderTable(); scheduleDraftSave();
+}
+
+/* ================= PRINT PREVIEW NOTE ================= */
+function updatePrintPreviewNote(){
+    const split = state.printSplit || 6;
+    const periodCount = state.columns.filter(c => c.type === 'period').length;
+    if (!periodCount) { printPreviewNote.textContent = ''; return; }
+    if (periodCount <= split) {
+        printPreviewNote.textContent = `🖨 Print preview: 1 page (${periodCount} period${periodCount !== 1 ? 's' : ''}).`;
+    } else {
+        const parts = Math.ceil(periodCount / split);
+        printPreviewNote.textContent = `🖨 Print preview: ${parts} pages (${split} periods per page). The Day column repeats on every page.`;
+    }
+}
+
+/* ================= CHUNK COLUMNS ================= */
+function chunkColumns(cols, maxPeriodsPerChunk){
+    const chunks = [];
+    let current = [];
+    let periodCount = 0;
+
+    for (const col of cols) {
+        if (col.type === 'period') {
+            if (periodCount >= maxPeriodsPerChunk) {
+                if (current.length) chunks.push(current);
+                current = [];
+                periodCount = 0;
+            }
+            current.push(col);
+            periodCount++;
+        } else {
+            // Break columns stay with the current chunk (so a break just before overflow stays with previous page)
+            current.push(col);
+        }
+    }
+    if (current.length) chunks.push(current);
+    return chunks;
+}
+
+/* ================= BUILD PRINT HTML ================= */
+function buildPrintHtml(){
+    const split = state.printSplit || 6;
+    const chunks = chunkColumns(state.columns, split);
+    if (!chunks.length || !state.rows.length) return '';
+
+    const title = titleEl.value.trim() || 'Class Routine';
+    const fields = state.fields || [];
+
+    let out = '';
+
+    chunks.forEach((chunk, idx) => {
+        out += `<div class="print-page">`;
+        out += `<div class="print-page-head">
+                    <h2>${esc(title)}</h2>
+                    ${chunks.length > 1 ? `<div class="print-part">Part ${idx + 1} of ${chunks.length}</div>` : ''}
+                </div>`;
+        out += '<table class="routine-print"><thead><tr>';
+        out += '<th class="corner">Day / Period</th>';
+        chunk.forEach(col => {
+            const label = esc(col.label || (col.type === 'break' ? 'Break' : 'Period'));
+            const time = col.time ? `<span class="print-time">${esc(col.time)}</span>` : '';
+            out += `<th class="${col.type === 'break' ? 'break-head' : ''}">${label}${time}</th>`;
+        });
+        out += '</tr></thead><tbody>';
+
+        state.rows.forEach((row, ri) => {
+            out += '<tr>';
+            out += `<th class="row-head">${esc(row.label || ('Day ' + (ri + 1)))}</th>`;
+            chunk.forEach(col => {
+                if (col.type === 'break') {
+                    if (ri === 0) {
+                        out += `<td class="break-cell" rowspan="${state.rows.length}">
+                            <div class="pbreak">
+                                <span class="pbreak-name">${esc(col.label || 'Break')}</span>
+                                ${col.time ? `<span class="pbreak-time">${esc(col.time)}</span>` : ''}
+                            </div>
+                        </td>`;
+                    }
+                } else {
+                    out += '<td>';
+                    fields.forEach(f => {
+                        const val = String(getCell(row.id, col.id, f.id) ?? '').trim();
+                        out += `<div class="pf">
+                            <span class="pf-label">${esc(f.label)}</span>
+                            <span class="pf-value ${val ? '' : 'empty'}">${val ? esc(val) : '—'}</span>
+                        </div>`;
+                    });
+                    out += '</td>';
+                }
+            });
+            out += '</tr>';
+        });
+        out += '</tbody></table></div>';
+    });
+
+    return out;
+}
+
+/* ================= PRINT ================= */
+function doPrint(){
+    if (!state.columns.length || !state.rows.length) {
+        toast('Nothing to print — add periods and rows first.', 'error');
+        return;
+    }
+    printContainer.innerHTML = buildPrintHtml();
+    window.print();
+}
+
+/* ================= DRAFT ================= */
+function scheduleDraftSave(){
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(saveDraft, 500);
+}
+function saveDraft(){
+    try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+            ...state,
+            title: titleEl.value.trim(),
+            docId: currentDocId
+        }));
+    } catch(_) {}
+}
+function loadDraft(){
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return false;
+        const d = JSON.parse(raw);
+        if (!d || !Array.isArray(d.fields) || !Array.isArray(d.columns) || !Array.isArray(d.rows)) return false;
+        state = { ...emptyState(), ...d };
+        titleEl.value = d.title || '';
+        currentDocId = d.docId || null;
+        if (state.printSplit) printSplitSelect.value = String(state.printSplit);
+        return true;
+    } catch(_) { return false; }
+}
+
+/* ================= SAVE ================= */
+async function saveRoutine(){
+    const title = titleEl.value.trim();
+    if (!title) { toast('Enter a Routine Title first.', 'error'); titleEl.focus(); return; }
+
+    btnSave.disabled = true;
+    const orig = btnSave.innerHTML;
+    btnSave.innerHTML = '⏳ Saving…';
+
+    try {
+        const payload = {
+            title,
+            fields: state.fields.map(f => ({ id: f.id, label: f.label })),
+            columns: state.columns.map(c => ({ id: c.id, type: c.type, label: c.label, time: c.time })),
+            rows: state.rows.map(r => ({ id: r.id, label: r.label })),
+            cells: state.cells,
+            classFieldId: classFieldSelect.value || null,
+            printSplit: state.printSplit || 6,
+            updatedAt: serverTimestamp()
+        };
+
+        if (currentDocId) {
+            await setDoc(doc(db, 'routines', currentDocId), payload, { merge: true });
+        } else {
+            const ref = await addDoc(collection(db, 'routines'), { ...payload, createdAt: serverTimestamp() });
+            currentDocId = ref.id;
+        }
+
+        await loadSavedList();
+        savedSelect.value = currentDocId;
+        saveDraft();
+        toast('Master routine saved ✓', 'success');
+
+        try {
+            await generateClassRoutines(true);
+        } catch (genErr) {
+            console.warn('Auto-generate skipped:', genErr);
+            toast('Saved, but class routines were not generated (check Class field).', 'error');
+        }
+    } catch (err) {
+        console.error('Save error:', err);
+        toast('Save failed: ' + (err.code || err.message), 'error');
+    } finally {
+        btnSave.disabled = false;
+        btnSave.innerHTML = orig;
+    }
+}
+
+/* ================= CLASS-WISE GENERATION ================= */
+async function generateClassRoutines(quiet = false){
+    const classFieldId = classFieldSelect.value;
+    if (!classFieldId) { if (!quiet) toast('Pick which field identifies the class.', 'error'); return; }
+
+    const clsMap = new Map();
+
+    state.rows.forEach(row => {
+        const rowMap = state.cells[row.id] || {};
+        Object.entries(rowMap).forEach(([colId, cell]) => {
+            const col = state.columns.find(c => c.id === colId);
+            if (!col || col.type === 'break') return;
+            const raw = String(cell?.[classFieldId] ?? '').trim();
+            if (!raw) return;
+            raw.split(',').map(s => s.trim()).filter(Boolean).forEach(cls => {
+                if (!clsMap.has(cls)) clsMap.set(cls, {});
+                if (!clsMap.get(cls)[row.id]) clsMap.get(cls)[row.id] = {};
+                clsMap.get(cls)[row.id][colId] = { ...cell };
+            });
+        });
+    });
+
+    if (!clsMap.size) {
+        if (!quiet) toast('No class values found in the Class field.', 'error');
+        return;
+    }
+
+    const writes = [];
+    for (const [cls, cells] of clsMap) {
+        const docId = classDocId(cls);
+        const payload = {
+            className: cls,
+            title: titleEl.value.trim() || 'Class Routine',
+            fields: state.fields.map(f => ({ id: f.id, label: f.label })),
+            columns: state.columns.map(c => ({ id: c.id, type: c.type, label: c.label, time: c.time })),
+            rows: state.rows.map(r => ({ id: r.id, label: r.label })),
+            cells,
+            classFieldId,
+            masterRoutineId: currentDocId || null,
+            updatedAt: serverTimestamp()
+        };
+        writes.push(setDoc(doc(db, 'class_routines', docId), payload, { merge: true }));
+    }
+    await Promise.all(writes);
+
+    generatedCard.style.display = 'block';
+    generatedList.innerHTML = [...clsMap.keys()].map(c =>
+        `<span class="class-chip">${esc(c)}</span>`
+    ).join('');
+
+    if (!quiet) toast(`Generated ${clsMap.size} class routine(s) ✓`, 'success');
+}
+
+/* ================= SAVED LIST ================= */
+async function loadSavedList(){
+    try {
+        const snap = await getDocs(collection(db, 'routines'));
+        savedRoutines = snap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .sort((a,b) => (b.updatedAt?.seconds||0) - (a.updatedAt?.seconds||0));
+
+        if (!savedRoutines.length) {
+            savedSelect.innerHTML = '<option value="">No saved routines yet</option>';
+            return;
+        }
+        savedSelect.innerHTML = '<option value="">— Select a saved routine —</option>' +
+            savedRoutines.map(r => `<option value="${r.id}">${esc(r.title || 'Untitled')}</option>`).join('');
+    } catch (err) {
+        console.warn('Load list error:', err);
+        savedSelect.innerHTML = '<option value="">Unable to load list</option>';
+    }
+}
+
+function loadSelected(){
+    const id = savedSelect.value;
+    if (!id) { toast('Select a saved routine.', 'error'); return; }
+    const r = savedRoutines.find(x => x.id === id);
+    if (!r) return;
+
+    state = {
+        title: r.title || '',
+        fields: r.fields || [{ id: uid('fld'), label: 'Subject' }, { id: uid('fld'), label: 'Class' }, { id: uid('fld'), label: 'Teacher' }],
+        columns: r.columns || [],
+        rows: r.rows || [],
+        cells: r.cells || {},
+        classFieldId: r.classFieldId || null,
+        printSplit: r.printSplit || 6
+    };
+    titleEl.value = state.title;
+    currentDocId = id;
+    printSplitSelect.value = String(state.printSplit);
+
+    renderFieldsList();
+    renderClassFieldSelect();
+    if (state.classFieldId) classFieldSelect.value = state.classFieldId;
+    renderTable();
+    saveDraft();
+    toast('Loaded: ' + (state.title || 'Untitled'), 'success');
+}
+
+async function deleteSelected(){
+    const id = savedSelect.value;
+    if (!id) { toast('Select a routine to delete.', 'error'); return; }
+    const r = savedRoutines.find(x => x.id === id);
+    if (!confirm(`Delete "${r?.title || 'this routine'}" permanently?`)) return;
+
+    btnDelete.disabled = true;
+    try {
+        await deleteDoc(doc(db, 'routines', id));
+        if (currentDocId === id) currentDocId = null;
+        await loadSavedList();
+        toast('Deleted.', 'success');
+    } catch (err) {
+        toast('Delete failed: ' + (err.code || err.message), 'error');
+    } finally {
+        btnDelete.disabled = false;
+    }
+}
+
+/* ================= MISC ================= */
+function openSidebar(){ sidebar.classList.add('open'); overlay.classList.add('show'); }
+function closeSidebar(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+
+function clearData(){
+    if (!confirm('Clear all typed values? Headers/columns/rows will be kept.')) return;
+    state.cells = {};
+    renderTable();
+    scheduleDraftSave();
+    toast('Data cleared.', 'success');
+}
+
+function resetToDefault(){
+    if (!confirm('Reset to a fresh default routine? (Current data will be lost)')) return;
+    state = emptyState();
+    currentDocId = null;
+    titleEl.value = '';
+    printSplitSelect.value = '6';
+    renderFieldsList();
+    renderClassFieldSelect();
+    renderTable();
+    saveDraft();
+    toast('Reset to default.', 'success');
+}
+
+/* ================= AUTH CHIP ================= */
+onAuthStateChanged(auth, user => {
+    if (user) { authChip.classList.add('on'); authText.textContent = 'Signed in'; }
+    else      { authChip.classList.remove('on'); authText.textContent = 'Not signed in'; }
+});
+
+/* ================= EVENTS ================= */
+btnAddField.addEventListener('click', addField);
+btnAddPeriod.addEventListener('click', addPeriod);
+btnAddBreak.addEventListener('click', addBreakColumn);
+btnAddRow.addEventListener('click', addRow);
+btnReset.addEventListener('click', resetToDefault);
+btnClear.addEventListener('click', clearData);
+btnPrint.addEventListener('click', doPrint);
+btnSave.addEventListener('click', saveRoutine);
+btnLoad.addEventListener('click', loadSelected);
+btnDelete.addEventListener('click', deleteSelected);
+
+classFieldSelect.addEventListener('change', () => { state.classFieldId = classFieldSelect.value; scheduleDraftSave(); });
+printSplitSelect.addEventListener('change', () => {
+    state.printSplit = parseInt(printSplitSelect.value, 10) || 6;
+    updatePrintPreviewNote();
+    scheduleDraftSave();
+});
+titleEl.addEventListener('input', () => scheduleDraftSave());
+menuToggle.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+overlay.addEventListener('click', closeSidebar);
+
+/* ================= INIT ================= */
+(function init(){
+    if (!loadDraft()) {
+        state = emptyState();
+        titleEl.value = '';
+    }
+    printSplitSelect.value = String(state.printSplit || 6);
+    renderFieldsList();
+    renderClassFieldSelect();
+    if (state.classFieldId) classFieldSelect.value = state.classFieldId;
+    renderTable();
+    loadSavedList();
+
+    if (currentDocId) {
+        setTimeout(() => {
+            if ([...savedSelect.options].some(o => o.value === currentDocId)) savedSelect.value = currentDocId;
+        }, 900);
+    }
+})();
+</script>
+</body>
+</html>
