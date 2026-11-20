@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Student List</title>
+
+<style>
+/* =========================================
+   GLOBAL STYLES
+   ========================================= */
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #f0f2f5;
+    padding: 0;
+    margin: 0;
+    color: #333;
+}
+
+/* =========================================
+   SIDEBAR
+   ========================================= */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 240px;
+    height: 100%;
+    background: #1565c0;
+    padding-top: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar h3 {
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 18px;
+    letter-spacing: 1px;
+}
+
+.sidebar a {
+    display: block;
+    color: #e3f2fd;
+    text-decoration: none;
+    padding: 12px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.sidebar a:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-left: 4px solid #64b5f6;
+}
+
+/* =========================================
+   MAIN CONTENT
+   ========================================= */
+.main-content {
+    margin-left: 240px;
+    padding: 25px;
+    max-width: 1200px;
+}
+
+.header {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #1976d2;
+    text-align: center;
+}
+
+.logout-btn {
+    padding: 10px 20px;
+    background: #dc3545;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 20px;
+    transition: 0.2s;
+    width: 100%;
+}
+.logout-btn:hover { background: #c82333; }
+
+/* =========================================
+   FILTERS & SEARCH
+   ========================================= */
+.filter-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.search {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    transition: 0.2s;
+}
+.search:focus { border-color: #1976d2; box-shadow: 0 0 5px rgba(25,118,210,0.3); }
+
+.session-select {
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #1976d2;
+    outline: none;
+    cursor: pointer;
+    background: white;
+    min-width: 180px;
+}
+
+.class-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.class-btn {
+    padding: 12px 10px;
+    background: white;
+    color: #1976d2;
+    border: 2px solid #1976d2;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+    transition: 0.2s;
+}
+
+.class-btn:hover {
+    background: #e3f2fd;
+}
+
+.class-btn.active {
+    background: #1976d2;
+    color: white;
+    box-shadow: 0 4px 8px rgba(25,118,210,0.3);
+}
+
+/* Section Filter Styles */
+.section-grid {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.section-btn {
+    padding: 8px 18px;
+    background: #e0e0e0;
+    color: #555;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.section-btn:hover { background: #d5d5d5; }
+
+.section-btn.active {
+    background: #ff9800;
+    color: white;
+    box-shadow: 0 3px 6px rgba(255,152,0,0.4);
+}
+
+/* =========================================
+   STUDENT LIST ROW
+   ========================================= */
+.student-row {
+    background: white;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 5px solid #1976d2;
+}
+
+.student-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.student-info div { margin-bottom: 4px; }
+.student-info strong { font-size: 18px; color: #222; }
+.student-info .details { color: #666; font-size: 14px; }
+
+.action-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.add-btn, .delete-btn {
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.add-btn { background: #28a745; color: white; }
+.add-btn:hover { background: #218838; }
+
+.delete-btn { background: #dc3545; color: white; }
+.delete-btn:hover { background: #c82333; }
+
+.loading {
+    text-align: center;
+    padding: 30px;
+    font-size: 18px;
+    color: #666;
+    font-weight: bold;
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+   ========================================= */
+@media (max-width: 768px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .sidebar h3 { width: 100%; margin: 0 0 10px 0; }
+
+    .sidebar a {
+        padding: 8px 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        border-left: none;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .filter-row { flex-direction: column; }
+    .session-select { width: 100%; }
+
+    .student-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .action-btns {
+        width: 100%;
+    }
+
+    .action-btns button {
+        flex: 1;
+    }
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <h3>Marksheet Menu</h3>
+    <a href="student-list.html">Student List</a>
+    <a href="marksheet-preview.html">Marksheet Preview</a>
+    <a href="marksheet.html">Marksheet</a>
+    <a href="add-marksheet.html">Add Marksheet</a>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+    <div class="header">Student List</div>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+
+    <!-- Search & Session Filter Row -->
+    <div class="filter-row">
+        <input type="text" id="searchInput" class="search" placeholder="Search Student by Name, Roll, etc...">
+        
+        <!-- Fixed Session Dropdown -->
+        <select id="sessionSelect" class="session-select">
+            <option value="">All Sessions</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+            <option value="2029">2029</option>
+            <option value="2030">2030</option>
+        </select>
+    </div>
+
+    <!-- Class Filter Buttons -->
+    <div class="class-grid">
+        <button class="class-btn" onclick="filterClass('PREPRIMARY', this)">PREPRIMARY</button>
+        <button class="class-btn" onclick="filterClass('Nursery', this)">Nursery</button>
+        <button class="class-btn" onclick="filterClass('LKG', this)">LKG</button>
+        <button class="class-btn" onclick="filterClass('UKG', this)">UKG</button>
+        <button class="class-btn" onclick="filterClass('1', this)">1</button>
+        <button class="class-btn" onclick="filterClass('2', this)">2</button>
+        <button class="class-btn" onclick="filterClass('3', this)">3</button>
+        <button class="class-btn" onclick="filterClass('4', this)">4</button>
+        <button class="class-btn" onclick="filterClass('5', this)">5</button>
+        <button class="class-btn" onclick="filterClass('6', this)">6</button>
+        <button class="class-btn" onclick="filterClass('7', this)">7</button>
+        <button class="class-btn" onclick="filterClass('8', this)">8</button>
+        <button class="class-btn" onclick="filterClass('9', this)">9</button>
+        <button class="class-btn" onclick="filterClass('10', this)">10</button>
+        <button class="class-btn" onclick="filterClass('11', this)">11</button>
+        <button class="class-btn" onclick="filterClass('12', this)">12</button>
+    </div>
+
+    <!-- Section Filter Buttons -->
+    <div class="section-grid">
+        <button class="section-btn active" onclick="filterSection('ALL', this)">All Sections</button>
+        <button class="section-btn" onclick="filterSection('A', this)">Section A</button>
+        <button class="section-btn" onclick="filterSection('B', this)">Section B</button>
+        <button class="section-btn" onclick="filterSection('C', this)">Section C</button>
+        <button class="section-btn" onclick="filterSection('D', this)">Section D</button>
+    </div>
+
+    <!-- Student Data Loads Here -->
+    <div id="studentContainer">
+        <div class="loading">Loading Students...</div>
+    </div>
+
+</div>
+
+<!-- Firebase Scripts -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script src="student-list.js"></script>
+</body>
+</html>
